@@ -1,0 +1,196 @@
+{
+    "pr": {
+        "mob": {
+            "logs_mobile": {
+                "socket": "tail -f /var/egsys-file/log/java/Mobile/PM_Socket.log",
+                "consumidor": "tail -f /var/egsys-file/log/java/Mobile/PM_Consumidor.log",
+                "consumidor_baixa": "tail -f /var/egsys-file/log/java/Mobile/PM_ConsumidorBaixaPrioridade.log",
+                "gerador": "tail -f /var/egsys-file/log/java/Mobile/PM_Generator.log",
+                "gerador2": "tail -f /var/egsys-file/log/java/Mobile/PM_Generator2.log",
+                "gerador3": "tail -f /var/egsys-file/log/java/Mobile/PM_Generator3.log",
+                "socket_files": "tail -f /var/egsys-file/log/java/Mobile/PM_SocketFiles.log",
+                "controle_frames": "tail -f /var/egsys-file/log/java/Mobile/PM_ControleFrames.log"
+            },
+            "logs_provider": {
+                "provider": "tail -f /var/egsys-file/log/java/Provider/GlobalProvider.log"
+            },
+            "logs_store": {
+                "socket": "tail -f /var/egsys-file/log/java/Store/Store_Socket.log"
+            },
+            "logs_gestao": {
+                "socket": "tail -f /var/egsys-file/log/java/Gestao/Gestao_Socket.log",
+                "gerador": "tail -f /var/egsys-file/log/java/Gestao/Gestao_Gerador.log",
+                "notificador": "tail -f /var/egsys-file/log/java/Gestao/Gestao_Notificador.log"
+            }
+        },
+        "mob3": {
+            "logs_gestao": {
+                "api": "tail -f /var/egsys-docker/containers/syspm-gestao-api-docker/service/build/logs/ws-gestao.log",
+                "alerta": "tail -f /var/egsys-docker/containers/syspm-gestao-alerta-worker-docker/service/build/logs/gestao-gerenciador-alerta.log.log",
+                "notificador": "tail -f /var/egsys-docker/containers/syspm-gestao-notificador-worker-docker/service/build/logs/gestao-notificador-alerta.log"
+            }
+        }
+    },
+    "sc": {
+        "mob": {
+            "logs_mobile": {
+                "socket": "tail -f /var/egsys-file/log/java/Mobile/PMSC_Socket.log",
+                "consumidor": "tail -f /var/egsys-file/log/java/Mobile/PMSC_ConsumidorDefault.log",
+                "consumidor_baixa": "tail -f /var/egsys-file/log/java/Mobile/PMSC_ConsumidorBaixaPrioridade.log",
+                "gerador": "tail -f /var/egsys-file/log/java/Mobile/PMSC_Generator.log",
+                "gerador2": "tail -f /var/egsys-file/log/java/Mobile/PMSC_Generator2.log",
+                "gerador3": "tail -f /var/egsys-file/log/java/Mobile/PMSC_Generator3.log",
+                "socket_files": "tail -f /var/egsys-file/log/java/Mobile/PMSC_SocketFiles.log",
+                "controle_frames": "tail -f /var/egsys-file/log/java/Mobile/PMSC_ControleFrames.log"
+            },
+            "logs_ait": {
+                "socket": "tail -f /var/egsys-file/log/java/AIT/AIT_Socket.log",
+                "gerador": "tail -f /var/egsys-file/log/java/AIT/AIT_Gerador.log",
+                "consumidor": "tail -f /var/egsys-file/log/java/AIT/AIT_Consumidor.log"
+            },
+            "logs_gestao": {
+                "placeholder": "Nenhum log configurado ainda."
+            }
+        },
+        "web": {
+            "logs_sade": {
+                "sade_access": "tail -f /var/egsys-docker/volumes/php7.3-apache/log/sade.pm.sc.gov.br.access.log",
+                "sade_access_ssl": "tail -f /var/egsys-docker/volumes/php7.3-apache/log/sade.pm.sc.gov.br.access-ssl.log",
+                "sade_error": "tail -f /var/egsys-docker/volumes/php7.3-apache/log/sade.pm.sc.gov.br.error.log",
+                "sade_error_ssl": "tail -f /var/egsys-docker/volumes/php7.3-apache/log/sade.pm.sc.gov.br.error-ssl.log"
+            }
+        }
+    },
+    "ro": {
+        "mob": {
+            "logs_mobile": {
+                "socket": "tail -f /var/egsys-file/log/java/Mobile/Socket.log",
+                "consumidor": "tail -f /var/egsys-file/log/java/Mobile/PMRO_Consumidor.log",
+                "gerador": "tail -f /var/egsys-file/log/java/Mobile/PMRO_Gerador.log",
+                "socket_files": "tail -f /var/egsys-file/log/java/Mobile/PMRO_SocketFiles.log",
+                "notificador": "tail -f /var/egsys-file/log/java/Mobile/PM_Notificador.log"
+            },
+            "logs_ait": {
+                "socket": "tail -f /var/egsys-file/log/java/SYSAIT/SYS_Socket.log",
+                "gerador": "tail -f /var/egsys-file/log/java/SYSAIT/SYS_Generator.log",
+                "consumidor": "tail -f /var/egsys-file/log/java/SYSAIT/SYS_Consumer.log",
+                "socket_runtime": "tail -f /var/egsys-file/log/java/SYSAIT/SYS_SocketRunTime.log",
+                "uploadfile": "tail -f /var/egsys-file/log/java/SYSAIT/SYS_UploadFile.log"
+            },
+            "logs_store": {
+                "socket": "tail -f /var/egsys-file/log/java/Store/Store_Socket.log"
+            },
+            "logs_gestao": {
+                "socket": "tail -f /var/egsys-file/log/java/Store/Gestao_Socket.log",
+                "gerador": "tail -f /var/egsys-file/log/java/Store/Gestao_Gerador.log",
+                "notificador": "tail -f /var/egsys-file/log/java/Store/Gestao_Notificador.log"
+            },
+            "logs_provider": {
+                "provider": "tail -f /var/egsys-file/log/java/Provider/GlobalProvider.log"
+            },
+            "logs_email": {
+                "sender": "tail -f /var/egsys-file/log/java/Email/EmailSender.log",
+                "gerador": "tail -f /var/egsys-file/log/java/Email/EmailSenderGenerator.log"
+            }
+        }
+    },
+    "to": {
+        "mob": {
+            "logs_mobile": {
+                "socket": "tail -f /var/egsys-file/log/java/Mobile/PM_Socket.log",
+                "gerador": "tail -f /var/egsys-file/log/java/Mobile/PM_Generator.log",
+                "gerador2": "tail -f /var/egsys-file/log/java/Mobile/PM_Generator2.log",
+                "gerador3": "tail -f /var/egsys-file/log/java/Mobile/PM_Generator3.log",
+                "consumidor": "tail -f /var/egsys-file/log/java/Mobile/PM_Consumidor.log",
+                "socket_files": "tail -f /var/egsys-file/log/java/Mobile/PM_SocketFiles.log"
+            },
+            "logs_ait": {
+                "socket": "tail -f /var/egsys-file/log/java/SYSAIT/SYS_Socket.log",
+                "gerador": "tail -f /var/egsys-file/log/java/SYSAIT/SYS_Generator.log",
+                "gerador2": "tail -f /var/egsys-file/log/java/SYSAIT/SYS_Generator2.log",
+                "gerador3": "tail -f /var/egsys-file/log/java/SYSAIT/SYS_Generator3.log",
+                "consumidor": "tail -f /var/egsys-file/log/java/SYSAIT/SYS_Consumidor.log",
+                "socket_files": "tail -f /var/egsys-file/log/java/SYSAIT/SYS_SocketFiles.log"
+            },
+            "logs_store": {
+                "socket": "tail -f /var/egsys-file/log/java/Store/Store_Socket.log"
+            },
+            "logs_gestao": {
+                "socket": "tail -f /var/egsys-file/log/java/Store/Gestao_Socket.log",
+                "gerador": "tail -f /var/egsys-file/log/java/Store/Gestao_Gerador.log",
+                "notificador": "tail -f /var/egsys-file/log/java/Store/Gestao_Notificador.log"
+            },
+            "logs_provider": {
+                "provider": "tail -f /var/egsys-file/log/java/Provider/GlobalProvider.log"
+            },
+            "logs_email": {
+                "sender": "tail -f /var/egsys-file/log/java/Email/EmailSender.log",
+                "gerador": "tail -f /var/egsys-file/log/java/Email/EmailSenderGenerator.log"
+            }
+        }
+    },
+    "gm": {
+        "mob": {
+            "logs_mobile": {
+                "socket": "tail -f /var/egsys-file/log/java/siseg_gm/socket.log",
+                "gerador": "tail -f /var/egsys-file/log/java/siseg_gm/generator.log",
+                "gerador2": "tail -f /var/egsys-file/log/java/siseg_gm/generator2.log",
+                "gerador3": "tail -f /var/egsys-file/log/java/siseg_gm/generator3.log",
+                "consumidor": "tail -f /var/egsys-file/log/java/siseg_gm/consumidor.log",
+                "consumidor_baixa_prioridade": "tail -f /var/egsys-file/log/java/siseg_gm/consumidor_baixa_prioridade.log",
+                "socket_files": "tail -f /var/egsys-file/log/java/siseg_gm/socket_files.log",
+                "store_socket": "tail -f /var/egsys-file/log/java/siseg_gm/store_socket.log",
+                "controle_frames": "tail -f /var/egsys-file/log/java/siseg_gm/controle_frames.log"
+            },
+            "logs_ait": {
+                "socket": "tail -f /var/egsys-file/log/java/SYSAIT/PM_Socket.log",
+                "gerador": "tail -f /var/egsys-file/log/java/SYSAIT/PM_Generator.log",
+                "gerador2": "tail -f /var/egsys-file/log/java/SYSAIT/PM_Generator2.log",
+                "gerador3": "tail -f /var/egsys-file/log/java/SYSAIT/PM_Generator3.log",
+                "consumidor": "tail -f /var/egsys-file/log/java/SYSAIT/PM_Consumidor.log",
+                "socket_files": "tail -f /var/egsys-file/log/java/SYSAIT/PM_SocketFiles.log"
+            },
+            "logs_provider": {
+                "provider": "tail -f /var/egsys-file/log/java/provider/global-provider.log"
+            },
+            "logs_email": {
+                "sender": "tail -f /var/egsys-file/log/java/email/email-sender.log",
+                "gerador": "tail -f /var/egsys-file/log/java/email/email-sender-generator.log"
+            }
+        },
+        "ait": {
+            "logs_ait": {
+                "ait": "tail -f /var/egsys-file/log/java/sysait/Logs.log"
+            }
+        }
+    },
+    "pi": {
+        "web_mob": {
+            "logs_mobile": {
+                "socket": "tail -f /var/egsys-file/log/java/Mobile/PM_Socket.log",
+                "gerador": "tail -f /var/egsys-file/log/java/Mobile/PM_Generator.log",
+                "gerador2": "tail -f /var/egsys-file/log/java/Mobile/PM_Generator2.log",
+                "gerador3": "tail -f /var/egsys-file/log/java/Mobile/PM_Generator3.log",
+                "consumidor": "tail -f /var/egsys-file/log/java/Mobile/PM_Consumidor.log",
+                "socket_files": "tail -f /var/egsys-file/log/java/Mobile/PM_SocketFiles.log",
+                "cbm_consumidor": "tail -f /var/egsys-file/log/java/Mobile/CBM_Consumidor.log",
+                "cbm_gerador": "tail -f /var/egsys-file/log/java/Mobile/CBM_Gerador.log"
+            },
+            "logs_store": {
+                "socket": "tail -f /var/egsys-file/log/java/Store/Store_Socket.log"
+            },
+            "logs_gestao": {
+                "socket": "tail -f /var/egsys-file/log/java/Store/Gestao_Socket.log",
+                "gerador": "tail -f /var/egsys-file/log/java/Store/Gestao_Gerador.log",
+                "notificador": "tail -f /var/egsys-file/log/java/Store/Gestao_Notificador.log"
+            },
+            "logs_provider": {
+                "provider": "tail -f /var/egsys-file/log/java/Provider/GlobalProvider.log"
+            },
+            "logs_email": {
+                "sender": "tail -f /var/egsys-file/log/java/Email/EmailSender.log",
+                "gerador": "tail -f /var/egsys-file/log/java/Email/EmailSenderGenerator.log"
+            }
+        }
+    }
+}

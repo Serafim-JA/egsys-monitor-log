@@ -1,0 +1,17 @@
+# Arquivos de ambiente com credenciais
+.env
+
+# Diretórios gerados pelo PyInstaller
+dist/
+build/
+*.spec
+
+# Cache e arquivos temporários do Python
+__pycache__/
+*.pyc
+*.tmp
+.pytest_cache/
+.coverage
+
+# Logs e outros arquivos de saída que não devem ser versionados
+*.log
