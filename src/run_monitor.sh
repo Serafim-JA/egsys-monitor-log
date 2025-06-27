@@ -2,74 +2,86 @@
 
 # --- Função para verificar e instalar dependências ---
 install_dependencies() {
-    echo "Verificando e instalando dependências..."
+    # Suprime a saída padrão e de erro da instalação e verificação
+    # Apenas mensagens de erro crítico serão impressas diretamente.
+    echo "Verificando e instalando dependências (em segundo plano)..."
 
     # Verificar se python3 e pip3 estão instalados
     if ! command -v python3 &> /dev/null; then
-        echo "Python 3 não encontrado. Instalando..."
-        # Detectar o gerenciador de pacotes e instalar python3
+        echo "Python 3 não encontrado. Tentando instalar..."
         if command -v apt &> /dev/null; then
-            sudo apt update
-            sudo apt install -y python3 python3-pip openssh-client
+            sudo apt update &> /dev/null
+            sudo apt install -y python3 python3-pip openssh-client &> /dev/null
         elif command -v yum &> /dev/null; then
-            sudo yum check-update
-            sudo yum install -y python3 python3-pip openssh-client
+            sudo yum check-update &> /dev/null
+            sudo yum install -y python3 python3-pip openssh-client &> /dev/null
         elif command -v dnf &> /dev/null; then
-            sudo dnf check-update
-            sudo dnf install -y python3 python3-pip openssh-client
+            sudo dnf check-update &> /dev/null
+            sudo dnf install -y python3 python3-pip openssh-client &> /dev/null
         elif command -v pacman &> /dev/null; then
-            sudo pacman -Sy --noconfirm python python-pip openssh
+            sudo pacman -Sy --noconfirm python python-pip openssh &> /dev/null
         else
-            echo "Gerenciador de pacotes não suportado. Por favor, instale python3, python3-pip e openssh-client manualmente."
-            exit 1
+            echo "Gerenciador de pacotes não suportado. Por favor, instale python3, python3-pip e openssh-client manualmente." >&2
+            return 1 # Retorna erro
+        fi
+        if [ $? -ne 0 ]; then
+            echo "Erro ao instalar Python 3. Verifique as permissões ou a conexão." >&2
+            return 1
         fi
     fi
 
-    # Verificar se paramiko e python-dotenv estão instalados
-    if ! python3 -c "import paramiko" &> /dev/null; then
-        echo "Módulo paramiko não encontrado. Instalando..."
-        pip3 install paramiko
-        if [ $? -ne 0 ]; then
-            echo "Erro ao instalar paramiko. Tente executar 'sudo pip3 install paramiko'."
-            exit 1
-        fi
-    fi
-
-    if ! python3 -c "import dotenv" &> /dev/null; then
-        echo "Módulo python-dotenv não encontrado. Instalando..."
-        pip3 install python-dotenv
-        if [ $? -ne 0 ]; then
-            echo "Erro ao instalar python-dotenv. Tente executar 'sudo pip3 install python-dotenv'."
-            exit 1
-        fi
+    # Instalar módulos Python via pip
+    pip_install_cmd="pip3 install paramiko python-dotenv rich"
+    
+    # Suprime a saída, apenas erros serão visíveis
+    $pip_install_cmd &> /dev/null
+    if [ $? -ne 0 ]; then
+        echo "Erro ao instalar módulos Python. Tente executar 'sudo $pip_install_cmd'." >&2
+        return 1
     fi
     echo "Dependências verificadas."
+    return 0 # Retorna sucesso
 }
 
 # --- Função para verificar a conexão VPN ---
 check_vpn_connection() {
     echo "Verificando conexão VPN..."
-    # Adapte esta parte para a sua VPN específica.
-    # Exemplo genérico: Verifica se existe algum "tun" device (comum em VPNs)
+    # Suprime a saída do grep se a VPN for detectada
     if ip link show | grep -q "tun"; then
         echo "Interface VPN (tun) detectada. Assumindo VPN conectada."
         return 0
     fi
 
-    echo "VPN não conectada. Por favor, conecte-se à VPN antes de continuar."
+    echo "VPN não conectada. Por favor, conecte-se à VPN antes de continuar." >&2
     return 1
 }
 
 # --- Execução Principal ---
 
-# 1. Instalar dependências (se necessário)
-install_dependencies
+# Limpa a tela para um início limpo
+clear
 
-# 2. Verificar conexão VPN (sem pedir senha aqui)
-if ! check_vpn_connection; then
+# Mensagem de início do sistema
+echo -e "\n\033[1;36m=========================================\033[0m"
+echo -e "\033[1;36m|          INICIANDO SISTEMA          |\033[0m"
+echo -e "\033[1;36m=========================================\033[0m"
+echo "" # Linha em branco
+
+# Executa as verificações e instalações
+if ! install_dependencies; then
+    echo -e "\n\033[1;31mFALHA: Erro na instalação de dependências. Encerrando.\033[0m"
     exit 1
 fi
 
-# 3. Executar o script Python
-echo "Iniciando o monitor de logs..."
+if ! check_vpn_connection; then
+    echo -e "\n\033[1;31mFALHA: Verificação de VPN. Encerrando.\033[0m"
+    exit 1
+fi
+
+# Limpa a tela novamente antes de iniciar o script Python para uma interface limpa
+clear
+
+# Inicia o script Python
+echo -e "\n\033[1;32mIniciando o monitor de logs...\033[0m"
+# Garante que o script python seja chamado com o caminho correto
 python3 "$(dirname "$0")/log_monitor.py"
