@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>egSYS Monitor - Analytics Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #0d0d0d; color: #e5e5e5; }
+        
+        /* Top Navigation */
+        .topnav { background: #1a1a1a; border-bottom: 1px solid #2a2a2a; padding: 0 24px; display: flex; align-items: center; height: 56px; position: fixed; top: 0; left: 0; right: 0; z-index: 1000; }
+        .logo { font-size: 20px; font-weight: 700; color: #fff; margin-right: 40px; }
+        .logo span { color: #7c3aed; }
+        .nav-links { display: flex; gap: 8px; flex: 1; }
+        .nav-link { padding: 8px 16px; color: #a3a3a3; text-decoration: none; border-radius: 6px; font-size: 14px; font-weight: 500; transition: all 0.2s; }
+        .nav-link:hover { background: #2a2a2a; color: #fff; }
+        .nav-link.active { background: #2a2a2a; color: #fff; }
+        .user-menu { display: flex; align-items: center; gap: 12px; }
+        .user-avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #7c3aed, #a855f7); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 13px; }
+        
+        /* Sidebar */
+        .sidebar { position: fixed; left: 0; top: 56px; width: 220px; height: calc(100vh - 56px); background: #1a1a1a; border-right: 1px solid #2a2a2a; padding: 16px 0; overflow-y: auto; }
+        .sidebar-section { padding: 0 16px; margin-bottom: 24px; }
+        .sidebar-title { font-size: 11px; font-weight: 600; color: #737373; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+        .sidebar-item { padding: 8px 12px; color: #a3a3a3; text-decoration: none; display: flex; align-items: center; gap: 10px; border-radius: 6px; font-size: 14px; margin-bottom: 2px; transition: all 0.2s; cursor: pointer; }
+        .sidebar-item:hover { background: #2a2a2a; color: #fff; }
+        .sidebar-item.active { background: #7c3aed; color: #fff; }
+        .sidebar-icon { font-size: 16px; width: 20px; }
+        
+        /* Main Content */
+        .main-content { margin-left: 220px; margin-top: 56px; padding: 24px; }
+        .page-header { margin-bottom: 24px; }
+        .page-title { font-size: 24px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+        .page-subtitle { font-size: 14px; color: #737373; }
+        
+        /* Time Range Selector */
+        .time-selector { display: flex; gap: 8px; margin-bottom: 24px; }
+        .time-btn { padding: 8px 16px; background: #2a2a2a; border: 1px solid #3a3a3a; color: #a3a3a3; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+        .time-btn:hover { background: #3a3a3a; color: #fff; }
+        .time-btn.active { background: #7c3aed; border-color: #7c3aed; color: #fff; }
+        
+        /* Metrics Grid */
+        .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .metric-card { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 8px; padding: 20px; transition: all 0.2s; }
+        .metric-card:hover { border-color: #3a3a3a; }
+        .metric-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+        .metric-title { font-size: 13px; color: #a3a3a3; font-weight: 500; }
+        .metric-icon { width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+        .metric-value { font-size: 32px; font-weight: 700; color: #fff; margin-bottom: 8px; }
+        .metric-change { font-size: 13px; display: flex; align-items: center; gap: 4px; }
+        .metric-change.up { color: #10b981; }
+        .metric-change.down { color: #ef4444; }
+        
+        /* Charts */
+        .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(500px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .chart-card { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 8px; padding: 20px; }
+        .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .chart-title { font-size: 15px; font-weight: 600; color: #fff; }
+        .chart-legend { display: flex; gap: 16px; font-size: 12px; }
+        .legend-item { display: flex; align-items: center; gap: 6px; color: #a3a3a3; }
+        .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+        
+        /* Table */
+        .table-card { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 8px; padding: 20px; }
+        .table-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .table-title { font-size: 15px; font-weight: 600; color: #fff; }
+        .table-actions { display: flex; gap: 8px; }
+        .btn { padding: 8px 16px; background: #2a2a2a; border: 1px solid #3a3a3a; color: #e5e5e5; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+        .btn:hover { background: #3a3a3a; border-color: #4a4a4a; }
+        .btn-primary { background: #7c3aed; border-color: #7c3aed; color: #fff; }
+        .btn-primary:hover { background: #6d28d9; }
+        
+        table { width: 100%; border-collapse: collapse; }
+        thead { border-bottom: 1px solid #2a2a2a; }
+        th { text-align: left; padding: 12px 16px; font-size: 12px; font-weight: 600; color: #737373; text-transform: uppercase; letter-spacing: 0.5px; }
+        td { padding: 16px; border-bottom: 1px solid #2a2a2a; font-size: 14px; }
+        tr:hover { background: #1f1f1f; }
+        
+        .status-badge { padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 500; }
+        .status-active { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+        .status-inactive { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+        .role-badge { padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 500; background: #2a2a2a; color: #a3a3a3; }
+        
+        /* Modal */
+        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); }
+        .modal-content { background: #1a1a1a; margin: 5% auto; padding: 0; border-radius: 12px; width: 90%; max-width: 600px; border: 1px solid #2a2a2a; }
+        .modal-header { padding: 24px; border-bottom: 1px solid #2a2a2a; display: flex; justify-content: space-between; align-items: center; }
+        .modal-title { font-size: 18px; font-weight: 600; color: #fff; }
+        .close { font-size: 24px; color: #737373; cursor: pointer; transition: color 0.2s; }
+        .close:hover { color: #fff; }
+        .modal-body { padding: 24px; }
+        .form-group { margin-bottom: 20px; }
+        .form-label { display: block; margin-bottom: 8px; font-size: 13px; font-weight: 500; color: #a3a3a3; }
+        .form-input { width: 100%; padding: 10px 14px; background: #0d0d0d; border: 1px solid #2a2a2a; border-radius: 6px; color: #e5e5e5; font-size: 14px; }
+        .form-input:focus { outline: none; border-color: #7c3aed; }
+        .modal-footer { padding: 20px 24px; border-top: 1px solid #2a2a2a; display: flex; justify-content: flex-end; gap: 12px; }
+        
+        .hidden { display: none; }
+        
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #1a1a1a; }
+        ::-webkit-scrollbar-thumb { background: #3a3a3a; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #4a4a4a; }
+    </style>
+</head>
+<body>
+    <div class="topnav">
+        <div class="logo">egSYS <span>Monitor</span></div>
+        <div class="nav-links">
+            <a href="#" class="nav-link active">Dashboard</a>
+            <a href="#" class="nav-link">Infrastructure</a>
+            <a href="#" class="nav-link">Logs</a>
+            <a href="#" class="nav-link">APM</a>
+        </div>
+        <div class="user-menu">
+            <div class="user-avatar">M</div>
+            <a href="/logout" style="color: #a3a3a3; text-decoration: none; font-size: 14px;">Sair</a>
+        </div>
+    </div>
+    
+    <div class="sidebar">
+        <div class="sidebar-section">
+            <div class="sidebar-title">Dashboards</div>
+            <div class="sidebar-item active" onclick="showSection('overview')">
+                <span class="sidebar-icon">📊</span>
+                <span>Overview</span>
+            </div>
+            <div class="sidebar-item" onclick="showSection('users')">
+                <span class="sidebar-icon">👥</span>
+                <span>Usuários</span>
+            </div>
+            <div class="sidebar-item" onclick="showSection('ssh')">
+                <span class="sidebar-icon">🔑</span>
+                <span>SSH Keys</span>
+            </div>
+            <div class="sidebar-item" onclick="showSection('logs')">
+                <span class="sidebar-icon">📋</span>
+                <span>Access Logs</span>
+            </div>
+        </div>
+        <div class="sidebar-section">
+            <div class="sidebar-title">Settings</div>
+            <div class="sidebar-item" onclick="showSection('config')">
+                <span class="sidebar-icon">⚙️</span>
+                <span>Configurações</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="main-content">
+        <div id="overview">
+            <div class="page-header">
+                <div class="page-title">System Overview</div>
+                <div class="page-subtitle">Monitoramento em tempo real do sistema egSYS</div>
+            </div>
+            
+            <div class="time-selector">
+                <button class="time-btn">1H</button>
+                <button class="time-btn">6H</button>
+                <button class="time-btn active">24H</button>
+                <button class="time-btn">7D</button>
+                <button class="time-btn">30D</button>
+            </div>
+            
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <div class="metric-title">Total de Usuários</div>
+                        <div class="metric-icon" style="background: rgba(124, 58, 237, 0.15); color: #7c3aed;">👥</div>
+                    </div>
+                    <div class="metric-value" id="totalUsers">0</div>
+                    <div class="metric-change up">
+                        <span>↗</span>
+                        <span>+12% vs last week</span>
+                    </div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <div class="metric-title">Usuários Ativos</div>
+                        <div class="metric-icon" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">✓</div>
+                    </div>
+                    <div class="metric-value" id="activeUsers">0</div>
+                    <div class="metric-change up">
+                        <span>↗</span>
+                        <span>+8% vs yesterday</span>
+                    </div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <div class="metric-title">Acessos Hoje</div>
+                        <div class="metric-icon" style="background: rgba(59, 130, 246, 0.15); color: #3b82f6;">📈</div>
+                    </div>
+                    <div class="metric-value" id="accessToday">0</div>
+                    <div class="metric-change up">
+                        <span>↗</span>
+                        <span>+24% vs yesterday</span>
+                    </div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <div class="metric-title">System Uptime</div>
+                        <div class="metric-icon" style="background: rgba(34, 197, 94, 0.15); color: #22c55e;">⚡</div>
+                    </div>
+                    <div class="metric-value">99.9%</div>
+                    <div class="metric-change up">
+                        <span>↗</span>
+                        <span>Excellent</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <div class="chart-title">Acessos por Hora</div>
+                        <div class="chart-legend">
+                            <div class="legend-item">
+                                <div class="legend-dot" style="background: #7c3aed;"></div>
+                                <span>Acessos</span>
+                            </div>
+                        </div>
+                    </div>
+                    <canvas id="accessChart" height="80"></canvas>
+                </div>
+                
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <div class="chart-title">Usuários por Função</div>
+                    </div>
+                    <canvas id="rolesChart" height="80"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div id="users" class="hidden">
+            <div class="page-header">
+                <div class="page-title">Gerenciamento de Usuários</div>
+                <div class="page-subtitle">Controle total de usuários e permissões</div>
+            </div>
+            
+            <div class="table-card">
+                <div class="table-header">
+                    <div class="table-title">Usuários Cadastrados</div>
+                    <div class="table-actions">
+                        <button class="btn" onclick="loadUsers()">🔄 Atualizar</button>
+                        <button class="btn btn-primary" onclick="showAddUserModal()">+ Novo Usuário</button>
+                    </div>
+                </div>
+                <table id="usersTable">
+                    <thead>
+                        <tr>
+                            <th>USUÁRIO</th>
+                            <th>EMAIL</th>
+                            <th>FUNÇÃO</th>
+                            <th>HOST SSH</th>
+                            <th>STATUS</th>
+                            <th>AÇÕES</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div id="ssh" class="hidden">
+            <div class="page-header">
+                <div class="page-title">Chaves SSH</div>
+                <div class="page-subtitle">Gerenciamento de chaves de acesso</div>
+            </div>
+            
+            <div class="table-card">
+                <div class="table-header">
+                    <div class="table-title">Chaves Cadastradas</div>
+                    <button class="btn btn-primary" onclick="showAddKeyModal()">+ Nova Chave</button>
+                </div>
+                <table id="sshTable">
+                    <thead>
+                        <tr>
+                            <th>USUÁRIO</th>
+                            <th>TIPO</th>
+                            <th>FINGERPRINT</th>
+                            <th>CRIADO EM</th>
+                            <th>AÇÕES</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div id="logs" class="hidden">
+            <div class="page-header">
+                <div class="page-title">Logs de Acesso</div>
+                <div class="page-subtitle">Auditoria completa do sistema</div>
+            </div>
+            
+            <div class="table-card">
+                <div class="table-header">
+                    <div class="table-title">Últimos Acessos</div>
+                    <div class="table-actions">
+                        <button class="btn" onclick="loadAccessLogs()">🔄 Atualizar</button>
+                        <button class="btn" onclick="clearLogs()">🗑️ Limpar</button>
+                    </div>
+                </div>
+                <div id="logViewer" style="background: #0d0d0d; padding: 20px; border-radius: 8px; font-family: 'Courier New', monospace; font-size: 13px; max-height: 500px; overflow-y: auto;"></div>
+            </div>
+        </div>
+        
+        <div id="config" class="hidden">
+            <div class="page-header">
+                <div class="page-title">Configurações</div>
+                <div class="page-subtitle">Parâmetros do sistema</div>
+            </div>
+            
+            <div class="table-card">
+                <div class="form-group">
+                    <label class="form-label">URL do Servidor</label>
+                    <input type="text" class="form-input" id="serverUrl" value="http://localhost:8080">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Atualização Automática</label>
+                    <input type="checkbox" id="autoUpdate" checked>
+                </div>
+                <button class="btn btn-primary" onclick="saveConfig()">💾 Salvar Configurações</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modals -->
+    <div id="addUserModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Adicionar Novo Usuário</div>
+                <span class="close" onclick="closeModal('addUserModal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Nome Completo</label>
+                    <input type="text" class="form-input" id="newUserName" placeholder="João Silva">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-input" id="newUserEmail" placeholder="joao@empresa.com">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Função</label>
+                    <select class="form-input" id="newUserRole">
+                        <option value="user">User</option>
+                        <option value="admin">Admin</option>
+                        <option value="sup">Suporte</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Host SSH</label>
+                    <input type="text" class="form-input" id="newUserHost" placeholder="192.168.1.100">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Usuário SSH</label>
+                    <input type="text" class="form-input" id="newUserUsername" placeholder="root">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Senha SSH</label>
+                    <input type="password" class="form-input" id="newUserSSHPassword">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeModal('addUserModal')">Cancelar</button>
+                <button class="btn btn-primary" onclick="addUser()">Criar Usuário</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="editUserModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Editar Usuário</div>
+                <span class="close" onclick="closeModal('editUserModal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editUserOriginalEmail">
+                <div class="form-group">
+                    <label class="form-label">Nome</label>
+                    <input type="text" class="form-input" id="editUserName">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-input" id="editUserEmail">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Função</label>
+                    <select class="form-input" id="editUserRole">
+                        <option value="user">User</option>
+                        <option value="admin">Admin</option>
+                        <option value="sup">Suporte</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Host SSH</label>
+                    <input type="text" class="form-input" id="editUserHost">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Usuário SSH</label>
+                    <input type="text" class="form-input" id="editUserUsername">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Nova Senha SSH (deixe vazio para manter)</label>
+                    <input type="password" class="form-input" id="editUserSSHPassword">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Status</label>
+                    <select class="form-input" id="editUserActive">
+                        <option value="true">Ativo</option>
+                        <option value="false">Inativo</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeModal('editUserModal')">Cancelar</button>
+                <button class="btn btn-primary" onclick="saveEditUser()">Salvar</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="addKeyModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Adicionar Chave SSH</div>
+                <span class="close" onclick="closeModal('addKeyModal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Usuário</label>
+                    <input type="text" class="form-input" id="keyUser">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Chave Pública SSH</label>
+                    <textarea class="form-input" id="keyContent" rows="5" placeholder="ssh-rsa AAAAB3..." style="font-family: 'Courier New', monospace; font-size: 12px;"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeModal('addKeyModal')">Cancelar</button>
+                <button class="btn btn-primary" onclick="addSSHKey()">Adicionar</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Charts
+        const accessCtx = document.getElementById('accessChart').getContext('2d');
+        const accessChart = new Chart(accessCtx, {
+            type: 'line',
+            data: {
+                labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', '24:00'],
+                datasets: [{
+                    label: 'Acessos',
+                    data: [12, 19, 15, 25, 32, 28, 35],
+                    borderColor: '#7c3aed',
+                    backgroundColor: 'rgba(124, 58, 237, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { grid: { color: '#2a2a2a' }, ticks: { color: '#737373' } },
+                    x: { grid: { color: '#2a2a2a' }, ticks: { color: '#737373' } }
+                }
+            }
+        });
+        
+        const rolesCtx = document.getElementById('rolesChart').getContext('2d');
+        const rolesChart = new Chart(rolesCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Admin', 'User', 'Suporte'],
+                datasets: [{
+                    data: [3, 12, 5],
+                    backgroundColor: ['#7c3aed', '#3b82f6', '#10b981']
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { position: 'bottom', labels: { color: '#a3a3a3' } } }
+            }
+        });
+        
+        function showSection(section) {
+            document.querySelectorAll('.main-content > div').forEach(el => {
+                if (el.id) el.classList.add('hidden');
+            });
+            document.getElementById(section).classList.remove('hidden');
+            
+            document.querySelectorAll('.sidebar-item').forEach(item => item.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            if (section === 'users') loadUsers();
+            if (section === 'ssh') loadSSHKeys();
+            if (section === 'logs') loadAccessLogs();
+            if (section === 'overview') loadStats();
+        }
+        
+        function loadStats() {
+            fetch('/api/stats').then(r => r.json()).then(data => {
+                document.getElementById('totalUsers').textContent = data.total_users;
+                document.getElementById('activeUsers').textContent = data.active_users;
+                document.getElementById('accessToday').textContent = data.access_today;
+            });
+        }
+        
+        function loadUsers() {
+            fetch('/api/users').then(r => r.json()).then(data => {
+                const tbody = document.querySelector('#usersTable tbody');
+                tbody.innerHTML = '';
+                data.users.forEach(user => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td style="font-weight: 600;">${user.name}</td>
+                            <td style="color: #a3a3a3;">${user.email}</td>
+                            <td><span class="role-badge">${user.role.toUpperCase()}</span></td>
+                            <td style="font-family: 'Courier New', monospace; font-size: 12px; color: #737373;">${user.ssh_host || '-'}</td>
+                            <td><span class="status-badge ${user.active ? 'status-active' : 'status-inactive'}">${user.active ? 'Ativo' : 'Inativo'}</span></td>
+                            <td>
+                                <button class="btn" style="padding: 6px 12px; font-size: 12px;" onclick="showEditUserModal('${user.email}')">Editar</button>
+                                <button class="btn" style="padding: 6px 12px; font-size: 12px;" onclick="deleteUser('${user.email}')">Deletar</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            });
+        }
+        
+        function loadSSHKeys() {
+            fetch('/api/ssh-keys').then(r => r.json()).then(data => {
+                const tbody = document.querySelector('#sshTable tbody');
+                tbody.innerHTML = '';
+                data.keys.forEach(key => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td style="font-weight: 600;">${key.user}</td>
+                            <td><span class="role-badge">${key.type}</span></td>
+                            <td style="font-family: 'Courier New', monospace; font-size: 11px; color: #737373;">${key.fingerprint}</td>
+                            <td style="color: #a3a3a3;">${key.created}</td>
+                            <td>
+                                <button class="btn" style="padding: 6px 12px; font-size: 12px;" onclick="deleteSSHKey('${key.user}')">Remover</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            });
+        }
+        
+        function loadAccessLogs() {
+            fetch('/api/access-logs').then(r => r.json()).then(data => {
+                const viewer = document.getElementById('logViewer');
+                viewer.innerHTML = '';
+                data.logs.forEach(log => {
+                    const color = log.includes('ERROR') ? '#ef4444' : log.includes('WARNING') ? '#f59e0b' : '#10b981';
+                    viewer.innerHTML += `<div style="padding: 8px 0; border-bottom: 1px solid #2a2a2a; color: ${color};">${log}</div>`;
+                });
+            });
+        }
+        
+        function showAddUserModal() { document.getElementById('addUserModal').style.display = 'block'; }
+        function showAddKeyModal() { document.getElementById('addKeyModal').style.display = 'block'; }
+        function closeModal(modalId) { document.getElementById(modalId).style.display = 'none'; }
+        
+        function showEditUserModal(email) {
+            fetch('/api/users').then(r => r.json()).then(data => {
+                const user = data.users.find(u => u.email === email);
+                if (!user) return;
+                document.getElementById('editUserOriginalEmail').value = email;
+                document.getElementById('editUserName').value = user.name;
+                document.getElementById('editUserEmail').value = user.email;
+                document.getElementById('editUserUsername').value = user.username || '';
+                document.getElementById('editUserRole').value = user.role;
+                document.getElementById('editUserHost').value = user.ssh_host || '';
+                document.getElementById('editUserActive').value = user.active ? 'true' : 'false';
+                document.getElementById('editUserModal').style.display = 'block';
+            });
+        }
+        
+        function addUser() {
+            const data = {
+                name: document.getElementById('newUserName').value,
+                email: document.getElementById('newUserEmail').value,
+                username: document.getElementById('newUserUsername').value,
+                role: document.getElementById('newUserRole').value,
+                ssh_host: document.getElementById('newUserHost').value,
+                ssh_password: document.getElementById('newUserSSHPassword').value
+            };
+            if (!data.name || !data.email) { alert('❌ Nome e email obrigatórios'); return; }
+            fetch('/api/users', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            }).then(r => r.json()).then(result => {
+                alert('✅ ' + result.message);
+                closeModal('addUserModal');
+                loadUsers();
+            });
+        }
+        
+        function saveEditUser() {
+            const originalEmail = document.getElementById('editUserOriginalEmail').value;
+            const data = {
+                name: document.getElementById('editUserName').value,
+                email: document.getElementById('editUserEmail').value,
+                username: document.getElementById('editUserUsername').value,
+                role: document.getElementById('editUserRole').value,
+                ssh_host: document.getElementById('editUserHost').value,
+                active: document.getElementById('editUserActive').value === 'true'
+            };
+            const sshPassword = document.getElementById('editUserSSHPassword').value;
+            if (sshPassword) data.ssh_password = sshPassword;
+            fetch(`/api/users/${originalEmail}`, {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            }).then(r => r.json()).then(result => {
+                alert('✅ ' + result.message);
+                closeModal('editUserModal');
+                loadUsers();
+            });
+        }
+        
+        function deleteUser(email) {
+            if (!confirm(`Deletar ${email}?`)) return;
+            fetch(`/api/users/${email}`, {method: 'DELETE'}).then(r => r.json()).then(result => {
+                alert('✅ ' + result.message);
+                loadUsers();
+            });
+        }
+        
+        function addSSHKey() {
+            const data = {
+                user: document.getElementById('keyUser').value,
+                key: document.getElementById('keyContent').value
+            };
+            fetch('/api/ssh-keys', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            }).then(r => r.json()).then(result => {
+                alert('✅ ' + result.message);
+                closeModal('addKeyModal');
+                loadSSHKeys();
+            });
+        }
+        
+        function deleteSSHKey(user) {
+            if (!confirm(`Remover chave de ${user}?`)) return;
+            fetch(`/api/ssh-keys/${user}`, {method: 'DELETE'}).then(r => r.json()).then(result => {
+                alert('✅ ' + result.message);
+                loadSSHKeys();
+            });
+        }
+        
+        function clearLogs() {
+            if (!confirm('Limpar logs?')) return;
+            fetch('/api/access-logs', {method: 'DELETE'}).then(r => r.json()).then(result => {
+                alert('✅ ' + result.message);
+                loadAccessLogs();
+            });
+        }
+        
+        function saveConfig() {
+            const data = {
+                server_url: document.getElementById('serverUrl').value,
+                auto_update: document.getElementById('autoUpdate').checked
+            };
+            fetch('/api/config', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            }).then(r => r.json()).then(result => {
+                alert('✅ ' + result.message);
+            });
+        }
+        
+        loadStats();
+        setInterval(loadStats, 30000);
+    </script>
+</body>
+</html>

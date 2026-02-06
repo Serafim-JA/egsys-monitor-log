@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>egSYS Monitor - Servidor de Atualizações</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .header h1 {
+            color: #667eea;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+        .stat {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .stat:last-child { border-bottom: none; }
+        .stat-label { color: #666; }
+        .stat-value {
+            font-weight: bold;
+            color: #667eea;
+        }
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            margin: 5px;
+            transition: all 0.3s;
+        }
+        .btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        .btn-success { background: #48bb78; }
+        .btn-success:hover { background: #38a169; }
+        .btn-danger { background: #f56565; }
+        .btn-danger:hover { background: #e53e3e; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        th {
+            background: #f7fafc;
+            color: #667eea;
+            font-weight: 600;
+        }
+        .status-online { color: #48bb78; font-weight: bold; }
+        .status-offline { color: #f56565; font-weight: bold; }
+        .changelog {
+            background: #f7fafc;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        .changelog-item {
+            padding: 8px 0;
+            border-left: 3px solid #667eea;
+            padding-left: 15px;
+            margin: 10px 0;
+        }
+        .version-badge {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>egSYS Monitor</h1>
+            <p>Servidor de Atualizações Centralizado</p>
+        </div>
+
+        <div class="grid">
+            <div class="card">
+                <h2>Informações do Servidor</h2>
+                <div class="stat">
+                    <span class="stat-label">Versão Atual:</span>
+                    <span class="stat-value" id="current-version">Carregando...</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Status:</span>
+                    <span class="stat-value status-online">● Online</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Porta:</span>
+                    <span class="stat-value">8080</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Clientes Conectados:</span>
+                    <span class="stat-value" id="client-count">0</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Ações Rápidas</h2>
+                <button class="btn btn-success" onclick="publishUpdate()">📦 Publicar Atualização</button>
+                <button class="btn" onclick="refreshData()">🔄 Atualizar Dados</button>
+                <button class="btn" onclick="viewLogs()">📋 Ver Logs</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Clientes Conectados</h2>
+            <table id="clients-table">
+                <thead>
+                    <tr>
+                        <th>Hostname</th>
+                        <th>Versão</th>
+                        <th>Usuário</th>
+                        <th>Último Acesso</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="clients-body">
+                    <tr>
+                        <td colspan="5" style="text-align: center; color: #999;">Carregando...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card">
+            <h2>Histórico de Versões</h2>
+            <div id="changelog-container">
+                <p style="color: #999;">Carregando...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function loadVersion() {
+            try {
+                const response = await fetch('/api/version');
+                const data = await response.json();
+                document.getElementById('current-version').textContent = data.version;
+                loadChangelog();
+            } catch (error) {
+                document.getElementById('current-version').textContent = 'Erro';
+            }
+        }
+
+        async function loadClients() {
+            try {
+                const response = await fetch('/api/clients');
+                const clients = await response.json();
+                
+                document.getElementById('client-count').textContent = clients.length;
+                
+                const tbody = document.getElementById('clients-body');
+                
+                if (clients.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #999;">Nenhum cliente conectado</td></tr>';
+                    return;
+                }
+                
+                tbody.innerHTML = clients.map(client => {
+                    const lastSeen = new Date(client.last_seen);
+                    const now = new Date();
+                    const diffMinutes = (now - lastSeen) / 1000 / 60;
+                    const status = diffMinutes < 5 ? 
+                        '<span class="status-online">● Online</span>' : 
+                        '<span class="status-offline">● Offline</span>';
+                    
+                    return `
+                        <tr>
+                            <td>${client.hostname}</td>
+                            <td><span class="version-badge">${client.version}</span></td>
+                            <td>${client.user || 'N/A'}</td>
+                            <td>${lastSeen.toLocaleString('pt-BR')}</td>
+                            <td>${status}</td>
+                        </tr>
+                    `;
+                }).join('');
+            } catch (error) {
+                console.error('Erro ao carregar clientes:', error);
+            }
+        }
+
+        async function loadChangelog() {
+            try {
+                const response = await fetch('/api/changelog');
+                const changelog = await response.json();
+                
+                const container = document.getElementById('changelog-container');
+                
+                if (changelog.length === 0) {
+                    container.innerHTML = '<p style="color: #999;">Nenhuma versão registrada</p>';
+                    return;
+                }
+                
+                container.innerHTML = changelog.map(entry => `
+                    <div class="changelog">
+                        <h3>
+                            <span class="version-badge">${entry.version}</span>
+                            <span style="color: #999; font-size: 0.9em; margin-left: 10px;">
+                                ${new Date(entry.date).toLocaleDateString('pt-BR')}
+                            </span>
+                        </h3>
+                        ${entry.changes.map(change => `
+                            <div class="changelog-item">• ${change}</div>
+                        `).join('')}
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Erro ao carregar changelog:', error);
+            }
+        }
+
+        function refreshData() {
+            loadVersion();
+            loadClients();
+        }
+
+        function publishUpdate() {
+            alert('Use o terminal para publicar atualizações:\npython3 update_admin.py');
+        }
+
+        function viewLogs() {
+            alert('Logs disponíveis no terminal do servidor');
+        }
+
+        // Carregar dados iniciais
+        refreshData();
+        
+        // Atualizar a cada 10 segundos
+        setInterval(refreshData, 10000);
+    </script>
+</body>
+</html>

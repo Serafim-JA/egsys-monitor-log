@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>egSYS Monitor - Secure Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #000; overflow: hidden; }
+        
+        /* Animated Background */
+        .bg-animation { position: fixed; width: 100%; height: 100%; background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0d0d0d 100%); }
+        .bg-animation::before { content: ''; position: absolute; width: 200%; height: 200%; background: radial-gradient(circle, rgba(124,58,237,0.1) 0%, transparent 50%); animation: rotate 20s linear infinite; }
+        @keyframes rotate { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        .particles { position: fixed; width: 100%; height: 100%; }
+        .particle { position: absolute; width: 2px; height: 2px; background: rgba(124,58,237,0.5); border-radius: 50%; animation: float 15s infinite; }
+        @keyframes float { 0%, 100% { transform: translateY(0) translateX(0); opacity: 0; } 50% { opacity: 1; } }
+        
+        /* Login Container */
+        .login-container { position: relative; z-index: 10; display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; }
+        .login-box { background: rgba(26, 26, 26, 0.8); backdrop-filter: blur(40px); border: 1px solid rgba(124,58,237,0.3); border-radius: 24px; padding: 60px 50px; width: 100%; max-width: 480px; box-shadow: 0 25px 50px rgba(0,0,0,0.5), 0 0 100px rgba(124,58,237,0.2); animation: slideUp 0.6s ease-out; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .logo-section { text-align: center; margin-bottom: 40px; }
+        .logo { width: 80px; height: 80px; margin: 0 auto 20px; background: linear-gradient(135deg, #7c3aed, #a855f7); border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 36px; box-shadow: 0 10px 30px rgba(124,58,237,0.4); }
+        .logo-text { font-size: 32px; font-weight: 800; background: linear-gradient(135deg, #fff, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 8px; }
+        .logo-subtitle { font-size: 14px; color: #737373; font-weight: 500; }
+        
+        .security-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3); color: #10b981; padding: 8px 16px; border-radius: 20px; font-size: 12px; font-weight: 600; margin-bottom: 30px; }
+        
+        .form-group { margin-bottom: 24px; }
+        .form-label { display: block; color: #a3a3a3; font-size: 13px; font-weight: 600; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .input-wrapper { position: relative; }
+        .input-icon { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); font-size: 20px; opacity: 0.5; }
+        .form-input { width: 100%; padding: 16px 18px 16px 52px; background: rgba(13,13,13,0.6); border: 2px solid rgba(124,58,237,0.2); border-radius: 12px; color: #fff; font-size: 15px; font-weight: 500; transition: all 0.3s; }
+        .form-input:focus { outline: none; border-color: #7c3aed; background: rgba(13,13,13,0.8); box-shadow: 0 0 0 4px rgba(124,58,237,0.1); }
+        .form-input::placeholder { color: #525252; }
+        
+        .btn-login { width: 100%; padding: 18px; background: linear-gradient(135deg, #7c3aed, #a855f7); border: none; border-radius: 12px; color: #fff; font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.3s; box-shadow: 0 10px 30px rgba(124,58,237,0.4); }
+        .btn-login:hover { transform: translateY(-2px); box-shadow: 0 15px 40px rgba(124,58,237,0.6); }
+        .btn-login:active { transform: translateY(0); }
+        
+        .footer-text { text-align: center; margin-top: 30px; color: #525252; font-size: 12px; }
+        .footer-text a { color: #7c3aed; text-decoration: none; font-weight: 600; }
+        
+        .error-message { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: #ef4444; padding: 14px; border-radius: 10px; margin-bottom: 20px; font-size: 13px; font-weight: 500; display: none; animation: shake 0.5s; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-10px); } 75% { transform: translateX(10px); } }
+    </style>
+</head>
+<body>
+    <div class="bg-animation"></div>
+    <div class="particles" id="particles"></div>
+    
+    <div class="login-container">
+        <div class="login-box">
+            <div class="logo-section">
+                <div class="logo">⚡</div>
+                <div class="logo-text">egSYS Monitor</div>
+                <div class="logo-subtitle">Enterprise Analytics Platform</div>
+            </div>
+            
+            <div class="security-badge">
+                <span>🔒</span>
+                <span>Conexão Segura SSL/TLS</span>
+            </div>
+            
+            <div class="error-message" id="errorMsg">{{ error }}</div>
+            
+            <form method="POST" id="loginForm">
+                <div class="form-group">
+                    <label class="form-label">Usuário</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">👤</span>
+                        <input type="text" name="username" class="form-input" placeholder="Digite seu usuário" required autofocus>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Senha</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">🔑</span>
+                        <input type="password" name="password" class="form-input" placeholder="Digite sua senha" required>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn-login">Entrar no Sistema</button>
+            </form>
+            
+            <div class="footer-text">
+                Protegido por <a href="#">egSYS Security</a> © 2024
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Create particles
+        const particlesContainer = document.getElementById('particles');
+        for (let i = 0; i < 50; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.top = Math.random() * 100 + '%';
+            particle.style.animationDelay = Math.random() * 15 + 's';
+            particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
+            particlesContainer.appendChild(particle);
+        }
+        
+        // Show error if exists
+        {% if error %}
+        document.getElementById('errorMsg').style.display = 'block';
+        {% endif %}
+        
+        // Form animation
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            const btn = this.querySelector('.btn-login');
+            btn.textContent = 'Autenticando...';
+            btn.style.opacity = '0.7';
+        });
+    </script>
+</body>
+</html>

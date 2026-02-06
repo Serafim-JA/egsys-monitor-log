@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>egSYS Monitor - Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0a0a0a; color: #fff; overflow-x: hidden; }
+        
+        /* Topbar */
+        .topbar { position: fixed; top: 0; left: 0; right: 0; height: 60px; background: rgba(15, 15, 15, 0.95); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(0, 122, 204, 0.3); display: flex; align-items: center; padding: 0 30px; z-index: 1000; }
+        .logo { font-size: 24px; font-weight: 700; background: linear-gradient(135deg, #007acc, #00a8ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .user-menu { margin-left: auto; display: flex; align-items: center; gap: 20px; }
+        .user-avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #007acc, #00a8ff); display: flex; align-items: center; justify-content: center; font-weight: 600; }
+        
+        /* Sidebar */
+        .sidebar { position: fixed; left: 0; top: 60px; bottom: 0; width: 260px; background: rgba(15, 15, 15, 0.95); backdrop-filter: blur(20px); border-right: 1px solid rgba(0, 122, 204, 0.3); padding: 30px 0; z-index: 999; }
+        .nav-item { padding: 12px 30px; color: #888; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 12px; }
+        .nav-item:hover, .nav-item.active { background: rgba(0, 122, 204, 0.1); color: #00a8ff; border-left: 3px solid #007acc; }
+        .nav-item i { width: 20px; }
+        
+        /* Main Content */
+        .main-content { margin-left: 260px; margin-top: 60px; padding: 40px; }
+        
+        /* Metrics Grid */
+        .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin-bottom: 40px; }
+        .metric-card { background: linear-gradient(135deg, rgba(0, 122, 204, 0.1), rgba(0, 168, 255, 0.05)); border: 1px solid rgba(0, 122, 204, 0.3); border-radius: 16px; padding: 24px; position: relative; overflow: hidden; transition: all 0.3s; }
+        .metric-card:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0, 122, 204, 0.3); }
+        .metric-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, #007acc, #00a8ff); }
+        .metric-icon { width: 48px; height: 48px; border-radius: 12px; background: rgba(0, 122, 204, 0.2); display: flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 16px; }
+        .metric-value { font-size: 36px; font-weight: 700; margin-bottom: 8px; }
+        .metric-label { color: #888; font-size: 14px; }
+        
+        /* Charts */
+        .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(500px, 1fr)); gap: 24px; margin-bottom: 40px; }
+        .chart-card { background: rgba(15, 15, 15, 0.8); border: 1px solid rgba(0, 122, 204, 0.3); border-radius: 16px; padding: 24px; }
+        .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .chart-title { font-size: 18px; font-weight: 600; }
+        .time-selector { display: flex; gap: 8px; }
+        .time-btn { padding: 6px 12px; background: rgba(0, 122, 204, 0.1); border: 1px solid rgba(0, 122, 204, 0.3); border-radius: 8px; color: #888; cursor: pointer; transition: all 0.3s; }
+        .time-btn:hover, .time-btn.active { background: rgba(0, 122, 204, 0.3); color: #fff; }
+        
+        /* Table */
+        .table-card { background: rgba(15, 15, 15, 0.8); border: 1px solid rgba(0, 122, 204, 0.3); border-radius: 16px; padding: 24px; margin-bottom: 24px; }
+        .table-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .btn-primary { padding: 10px 20px; background: linear-gradient(135deg, #007acc, #00a8ff); border: none; border-radius: 8px; color: #fff; cursor: pointer; font-weight: 600; transition: all 0.3s; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0, 122, 204, 0.4); }
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; padding: 12px; color: #888; font-weight: 600; border-bottom: 1px solid rgba(0, 122, 204, 0.2); }
+        td { padding: 12px; border-bottom: 1px solid rgba(0, 122, 204, 0.1); }
+        .badge { padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+        .badge-success { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
+        .badge-warning { background: rgba(251, 191, 36, 0.2); color: #fbbf24; }
+        .badge-danger { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+        .action-btn { padding: 6px 12px; background: rgba(0, 122, 204, 0.2); border: none; border-radius: 6px; color: #00a8ff; cursor: pointer; margin: 0 4px; }
+        .action-btn:hover { background: rgba(0, 122, 204, 0.4); }
+        
+        /* Modal */
+        .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(10px); z-index: 2000; align-items: center; justify-content: center; }
+        .modal.active { display: flex; }
+        .modal-content { background: #1a1a1a; border: 1px solid rgba(0, 122, 204, 0.3); border-radius: 16px; padding: 32px; max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto; }
+        .modal-header { font-size: 24px; font-weight: 700; margin-bottom: 24px; }
+        .form-group { margin-bottom: 20px; }
+        .form-label { display: block; margin-bottom: 8px; color: #888; font-size: 14px; }
+        .form-input { width: 100%; padding: 12px; background: rgba(0, 122, 204, 0.1); border: 1px solid rgba(0, 122, 204, 0.3); border-radius: 8px; color: #fff; font-size: 14px; }
+        .form-input:focus { outline: none; border-color: #007acc; }
+        .form-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px; }
+        .btn-secondary { padding: 10px 20px; background: rgba(0, 122, 204, 0.1); border: 1px solid rgba(0, 122, 204, 0.3); border-radius: 8px; color: #fff; cursor: pointer; }
+        
+        /* Section */
+        .section { display: none; }
+        .section.active { display: block; }
+    </style>
+</head>
+<body>
+    <!-- Topbar -->
+    <div class="topbar">
+        <div class="logo"><i class="fas fa-shield-alt"></i> egSYS Monitor</div>
+        <div class="user-menu">
+            <div class="user-avatar">LS</div>
+            <span>{{ current_user.id }}</span>
+            <a href="/logout" style="color: #888; text-decoration: none;"><i class="fas fa-sign-out-alt"></i></a>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="nav-item active" onclick="showSection('overview')"><i class="fas fa-chart-line"></i> Overview</div>
+        <div class="nav-item" onclick="showSection('users')"><i class="fas fa-users"></i> Usuários</div>
+        <div class="nav-item" onclick="showSection('ssh-keys')"><i class="fas fa-key"></i> Chaves SSH</div>
+        <div class="nav-item" onclick="showSection('logs')"><i class="fas fa-file-alt"></i> Logs de Acesso</div>
+        <div class="nav-item" onclick="showSection('system')"><i class="fas fa-server"></i> Sistema</div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Overview Section -->
+        <div id="overview" class="section active">
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-icon"><i class="fas fa-users"></i></div>
+                    <div class="metric-value" id="total-users">0</div>
+                    <div class="metric-label">Total de Usuários</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon"><i class="fas fa-user-check"></i></div>
+                    <div class="metric-value" id="active-users">0</div>
+                    <div class="metric-label">Usuários Ativos</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon"><i class="fas fa-chart-bar"></i></div>
+                    <div class="metric-value" id="access-today">0</div>
+                    <div class="metric-label">Acessos Hoje</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon"><i class="fas fa-server"></i></div>
+                    <div class="metric-value" id="cpu-usage">0%</div>
+                    <div class="metric-label">Uso de CPU</div>
+                </div>
+            </div>
+
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <div class="chart-title">Acessos por Hora</div>
+                        <div class="time-selector">
+                            <div class="time-btn active">24H</div>
+                        </div>
+                    </div>
+                    <canvas id="hourlyChart"></canvas>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <div class="chart-title">Distribuição por Função</div>
+                    </div>
+                    <canvas id="rolesChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Users Section -->
+        <div id="users" class="section">
+            <div class="table-card">
+                <div class="table-header">
+                    <h2>Gerenciar Usuários</h2>
+                    <button class="btn-primary" onclick="openModal('user')"><i class="fas fa-plus"></i> Novo Usuário</button>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Email</th>
+                            <th>Função</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-table"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- SSH Keys Section -->
+        <div id="ssh-keys" class="section">
+            <div class="table-card">
+                <div class="table-header">
+                    <h2>Chaves SSH</h2>
+                    <button class="btn-primary" onclick="openModal('ssh')"><i class="fas fa-plus"></i> Nova Chave</button>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Usuário</th>
+                            <th>Tipo</th>
+                            <th>Fingerprint</th>
+                            <th>Criado</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ssh-table"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Logs Section -->
+        <div id="logs" class="section">
+            <div class="table-card">
+                <div class="table-header">
+                    <h2>Logs de Acesso</h2>
+                    <button class="btn-primary" onclick="clearLogs()"><i class="fas fa-trash"></i> Limpar</button>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Usuário</th>
+                            <th>Ação</th>
+                            <th>Detalhes</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logs-table"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- System Section -->
+        <div id="system" class="section">
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-icon"><i class="fas fa-microchip"></i></div>
+                    <div class="metric-value" id="sys-cpu">0%</div>
+                    <div class="metric-label">CPU</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon"><i class="fas fa-memory"></i></div>
+                    <div class="metric-value" id="sys-memory">0%</div>
+                    <div class="metric-label">Memória</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon"><i class="fas fa-hdd"></i></div>
+                    <div class="metric-value" id="sys-disk">0%</div>
+                    <div class="metric-label">Disco</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal User -->
+    <div id="modal-user" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">Novo Usuário</div>
+            <form id="form-user">
+                <div class="form-group">
+                    <label class="form-label">Nome Completo *</label>
+                    <input type="text" class="form-input" name="name" placeholder="Ex: João Silva" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email *</label>
+                    <input type="email" class="form-input" name="email" placeholder="joao.silva@egsys.com.br" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Usuário SSH *</label>
+                    <input type="text" class="form-input" name="username" placeholder="Ex: joao.silva" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Função *</label>
+                    <select class="form-input" name="role" required>
+                        <option value="user">User</option>
+                        <option value="admin">Admin</option>
+                        <option value="sup">Suporte</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Host SSH *</label>
+                    <input type="text" class="form-input" name="ssh_host" placeholder="Ex: 192.168.1.100" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Senha SSH *</label>
+                    <input type="password" class="form-input" name="ssh_password" placeholder="Senha para acesso SSH" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Chave Pública SSH</label>
+                    <textarea class="form-input" name="public_key" rows="3" placeholder="ssh-rsa AAAAB3NzaC1yc2E... (opcional)"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="closeModal('user')">Cancelar</button>
+                    <button type="submit" class="btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal SSH -->
+    <div id="modal-ssh" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">Nova Chave SSH</div>
+            <form id="form-ssh">
+                <div class="form-group">
+                    <label class="form-label">Usuário (Email)</label>
+                    <input type="email" class="form-input" name="user" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Chave Pública</label>
+                    <textarea class="form-input" name="key" rows="4" required></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="closeModal('ssh')">Cancelar</button>
+                    <button type="submit" class="btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let hourlyChart, rolesChart;
+
+        // Navigation
+        function showSection(section) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById(section).classList.add('active');
+            event.target.classList.add('active');
+            if (section === 'overview') loadDashboard();
+            if (section === 'users') loadUsers();
+            if (section === 'ssh-keys') loadSSHKeys();
+            if (section === 'logs') loadLogs();
+            if (section === 'system') loadSystem();
+        }
+
+        // Modals
+        function openModal(type) {
+            document.getElementById('modal-' + type).classList.add('active');
+        }
+        function closeModal(type) {
+            document.getElementById('modal-' + type).classList.remove('active');
+        }
+
+        // Load Dashboard
+        async function loadDashboard() {
+            const stats = await fetch('/api/stats').then(r => r.json());
+            document.getElementById('total-users').textContent = stats.total_users;
+            document.getElementById('active-users').textContent = stats.active_users;
+            document.getElementById('access-today').textContent = stats.access_today;
+            
+            const health = await fetch('/api/system/health').then(r => r.json());
+            document.getElementById('cpu-usage').textContent = health.cpu.toFixed(1) + '%';
+            
+            const hourly = await fetch('/api/analytics/hourly').then(r => r.json());
+            if (hourlyChart) hourlyChart.destroy();
+            hourlyChart = new Chart(document.getElementById('hourlyChart'), {
+                type: 'line',
+                data: {
+                    labels: hourly.labels,
+                    datasets: [{
+                        label: 'Acessos',
+                        data: hourly.data,
+                        borderColor: '#007acc',
+                        backgroundColor: 'rgba(0, 122, 204, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: { responsive: true, plugins: { legend: { display: false } } }
+            });
+            
+            const roles = await fetch('/api/analytics/roles').then(r => r.json());
+            if (rolesChart) rolesChart.destroy();
+            rolesChart = new Chart(document.getElementById('rolesChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: roles.labels,
+                    datasets: [{
+                        data: roles.data,
+                        backgroundColor: ['#007acc', '#00a8ff', '#5ec8ff']
+                    }]
+                },
+                options: { responsive: true }
+            });
+        }
+
+        // Load Users
+        async function loadUsers() {
+            const data = await fetch('/api/users').then(r => r.json());
+            const tbody = document.getElementById('users-table');
+            tbody.innerHTML = data.users.map(u => `
+                <tr>
+                    <td>${u.name}</td>
+                    <td>${u.email}</td>
+                    <td><span class="badge badge-${u.role === 'admin' ? 'danger' : 'success'}">${u.role}</span></td>
+                    <td><span class="badge badge-${u.active ? 'success' : 'warning'}">${u.active ? 'Ativo' : 'Inativo'}</span></td>
+                    <td>
+                        <button class="action-btn" onclick="deleteUser('${u.email}')"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Load SSH Keys
+        async function loadSSHKeys() {
+            const data = await fetch('/api/ssh-keys').then(r => r.json());
+            const tbody = document.getElementById('ssh-table');
+            tbody.innerHTML = data.keys.map(k => `
+                <tr>
+                    <td>${k.user}</td>
+                    <td>${k.type}</td>
+                    <td><code style="color: #888;">${k.fingerprint}</code></td>
+                    <td>${k.created}</td>
+                    <td>
+                        <button class="action-btn" onclick="deleteKey('${k.user}')"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Load Logs
+        async function loadLogs() {
+            const data = await fetch('/api/access-logs').then(r => r.json());
+            const tbody = document.getElementById('logs-table');
+            tbody.innerHTML = data.logs.reverse().map(log => {
+                const parts = log.match(/\[(.*?)\] (.*?) - (.*?) - (.*)/);
+                if (!parts) return '';
+                return `<tr><td>${parts[1]}</td><td>${parts[2]}</td><td>${parts[3]}</td><td>${parts[4]}</td></tr>`;
+            }).join('');
+        }
+
+        // Load System
+        async function loadSystem() {
+            const health = await fetch('/api/system/health').then(r => r.json());
+            document.getElementById('sys-cpu').textContent = health.cpu.toFixed(1) + '%';
+            document.getElementById('sys-memory').textContent = health.memory.toFixed(1) + '%';
+            document.getElementById('sys-disk').textContent = health.disk.toFixed(1) + '%';
+        }
+
+        // Forms
+        document.getElementById('form-user').onsubmit = async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            await fetch('/api/users', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(Object.fromEntries(formData))
+            });
+            closeModal('user');
+            loadUsers();
+        };
+
+        document.getElementById('form-ssh').onsubmit = async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            await fetch('/api/ssh-keys', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(Object.fromEntries(formData))
+            });
+            closeModal('ssh');
+            loadSSHKeys();
+        };
+
+        async function deleteUser(email) {
+            if (confirm('Remover usuário?')) {
+                await fetch('/api/users/' + email, { method: 'DELETE' });
+                loadUsers();
+            }
+        }
+
+        async function deleteKey(user) {
+            if (confirm('Remover chave?')) {
+                await fetch('/api/ssh-keys/' + user, { method: 'DELETE' });
+                loadSSHKeys();
+            }
+        }
+
+        async function clearLogs() {
+            if (confirm('Limpar todos os logs?')) {
+                await fetch('/api/access-logs', { method: 'DELETE' });
+                loadLogs();
+            }
+        }
+
+        // Init
+        loadDashboard();
+        setInterval(() => {
+            if (document.getElementById('overview').classList.contains('active')) loadDashboard();
+            if (document.getElementById('system').classList.contains('active')) loadSystem();
+        }, 5000);
+    </script>
+</body>
+</html>

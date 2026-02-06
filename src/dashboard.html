@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>egSYS Monitor - Enterprise Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%); color: #e4e4e7; overflow-x: hidden; }
+        
+        /* Sidebar */
+        .sidebar { position: fixed; left: 0; top: 0; width: 280px; height: 100vh; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px); border-right: 1px solid rgba(148, 163, 184, 0.1); z-index: 1000; transition: all 0.3s; }
+        .sidebar-header { padding: 30px 25px; border-bottom: 1px solid rgba(148, 163, 184, 0.1); }
+        .logo { font-size: 24px; font-weight: 700; background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .nav-item { padding: 15px 25px; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 15px; border-left: 3px solid transparent; }
+        .nav-item:hover { background: rgba(59, 130, 246, 0.1); border-left-color: #3b82f6; }
+        .nav-item.active { background: rgba(59, 130, 246, 0.15); border-left-color: #3b82f6; }
+        .nav-icon { font-size: 20px; }
+        
+        /* Main Content */
+        .main-content { margin-left: 280px; padding: 30px; min-height: 100vh; }
+        .topbar { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(20px); border-radius: 16px; padding: 20px 30px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(148, 163, 184, 0.1); }
+        .search-box { background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(148, 163, 184, 0.2); border-radius: 12px; padding: 12px 20px; width: 400px; color: #e4e4e7; }
+        .user-profile { display: flex; align-items: center; gap: 15px; }
+        .avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); display: flex; align-items: center; justify-content: center; font-weight: 600; }
+        
+        /* Cards */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; margin-bottom: 30px; }
+        .stat-card { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(20px); border-radius: 16px; padding: 25px; border: 1px solid rgba(148, 163, 184, 0.1); transition: all 0.3s; position: relative; overflow: hidden; }
+        .stat-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: linear-gradient(90deg, #3b82f6, #8b5cf6); }
+        .stat-card:hover { transform: translateY(-5px); border-color: rgba(59, 130, 246, 0.3); box-shadow: 0 20px 40px rgba(59, 130, 246, 0.1); }
+        .stat-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .stat-icon { width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; }
+        .stat-value { font-size: 36px; font-weight: 700; margin-bottom: 5px; background: linear-gradient(135deg, #fff 0%, #94a3b8 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .stat-label { font-size: 14px; color: #94a3b8; }
+        .stat-trend { font-size: 12px; color: #10b981; margin-top: 10px; }
+        
+        /* Table */
+        .data-table { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(20px); border-radius: 16px; padding: 30px; border: 1px solid rgba(148, 163, 184, 0.1); }
+        .table-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .table-title { font-size: 20px; font-weight: 600; }
+        .btn { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; border: none; padding: 12px 24px; border-radius: 10px; cursor: pointer; font-weight: 500; transition: all 0.3s; display: inline-flex; align-items: center; gap: 8px; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3); }
+        .btn-danger { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
+        .btn-success { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+        
+        table { width: 100%; border-collapse: separate; border-spacing: 0 10px; }
+        th { text-align: left; padding: 15px; color: #94a3b8; font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
+        td { padding: 18px 15px; background: rgba(30, 41, 59, 0.4); border-top: 1px solid rgba(148, 163, 184, 0.05); border-bottom: 1px solid rgba(148, 163, 184, 0.05); }
+        tr td:first-child { border-left: 1px solid rgba(148, 163, 184, 0.05); border-radius: 10px 0 0 10px; }
+        tr td:last-child { border-right: 1px solid rgba(148, 163, 184, 0.05); border-radius: 0 10px 10px 0; }
+        tr:hover td { background: rgba(59, 130, 246, 0.1); }
+        
+        .badge { padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 500; }
+        .badge-user { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+        .badge-admin { background: rgba(139, 92, 246, 0.2); color: #a78bfa; }
+        .badge-sup { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+        .badge-active { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+        .badge-inactive { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+        
+        /* Modal */
+        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(5px); }
+        .modal-content { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); margin: 3% auto; padding: 0; border-radius: 20px; width: 90%; max-width: 600px; border: 1px solid rgba(148, 163, 184, 0.2); box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5); animation: slideDown 0.3s; }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-50px); } to { opacity: 1; transform: translateY(0); } }
+        .modal-header { padding: 30px; border-bottom: 1px solid rgba(148, 163, 184, 0.1); display: flex; justify-content: space-between; align-items: center; }
+        .modal-title { font-size: 22px; font-weight: 600; }
+        .close { font-size: 28px; cursor: pointer; color: #94a3b8; transition: all 0.3s; }
+        .close:hover { color: #ef4444; transform: rotate(90deg); }
+        .modal-body { padding: 30px; max-height: 60vh; overflow-y: auto; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; color: #94a3b8; font-size: 14px; font-weight: 500; }
+        .form-group input, .form-group select { width: 100%; padding: 14px; background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(148, 163, 184, 0.2); border-radius: 10px; color: #e4e4e7; font-size: 14px; transition: all 0.3s; }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+        .modal-footer { padding: 20px 30px; border-top: 1px solid rgba(148, 163, 184, 0.1); display: flex; justify-content: flex-end; gap: 15px; }
+        
+        /* Charts */
+        .chart-container { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(20px); border-radius: 16px; padding: 30px; border: 1px solid rgba(148, 163, 184, 0.1); margin-bottom: 30px; }
+        
+        /* Animations */
+        .fade-in { animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(30, 41, 59, 0.3); }
+        ::-webkit-scrollbar-thumb { background: rgba(59, 130, 246, 0.5); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(59, 130, 246, 0.7); }
+        
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">⚡ egSYS Monitor</div>
+        </div>
+        <nav>
+            <div class="nav-item active" onclick="showSection('overview')">
+                <span class="nav-icon">📊</span>
+                <span>Dashboard</span>
+            </div>
+            <div class="nav-item" onclick="showSection('users')">
+                <span class="nav-icon">👥</span>
+                <span>Usuários</span>
+            </div>
+            <div class="nav-item" onclick="showSection('ssh')">
+                <span class="nav-icon">🔑</span>
+                <span>Chaves SSH</span>
+            </div>
+            <div class="nav-item" onclick="showSection('logs')">
+                <span class="nav-icon">📋</span>
+                <span>Logs</span>
+            </div>
+            <div class="nav-item" onclick="showSection('config')">
+                <span class="nav-icon">⚙️</span>
+                <span>Configurações</span>
+            </div>
+            <div class="nav-item" onclick="window.location.href='/logout'">
+                <span class="nav-icon">🚪</span>
+                <span>Sair</span>
+            </div>
+        </nav>
+    </div>
+    
+    <div class="main-content">
+        <div class="topbar">
+            <input type="text" class="search-box" placeholder="🔍 Buscar...">
+            <div class="user-profile">
+                <div class="avatar">M</div>
+                <div>
+                    <div style="font-weight: 600;">Master Admin</div>
+                    <div style="font-size: 12px; color: #94a3b8;">Administrador</div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="overview" class="fade-in">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div>
+                            <div class="stat-value" id="totalUsers">0</div>
+                            <div class="stat-label">Total de Usuários</div>
+                        </div>
+                        <div class="stat-icon" style="background: rgba(59, 130, 246, 0.2); color: #3b82f6;">👥</div>
+                    </div>
+                    <div class="stat-trend">↗ +12% este mês</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div>
+                            <div class="stat-value" id="activeUsers">0</div>
+                            <div class="stat-label">Usuários Ativos</div>
+                        </div>
+                        <div class="stat-icon" style="background: rgba(16, 185, 129, 0.2); color: #10b981;">✓</div>
+                    </div>
+                    <div class="stat-trend">↗ +8% esta semana</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div>
+                            <div class="stat-value" id="accessToday">0</div>
+                            <div class="stat-label">Acessos Hoje</div>
+                        </div>
+                        <div class="stat-icon" style="background: rgba(139, 92, 246, 0.2); color: #8b5cf6;">📈</div>
+                    </div>
+                    <div class="stat-trend">↗ +24% vs ontem</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div>
+                            <div class="stat-value">99.9%</div>
+                            <div class="stat-label">Uptime</div>
+                        </div>
+                        <div class="stat-icon" style="background: rgba(34, 197, 94, 0.2); color: #22c55e;">⚡</div>
+                    </div>
+                    <div class="stat-trend">↗ Excelente</div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="users" class="hidden">
+            <div class="data-table">
+                <div class="table-header">
+                    <div class="table-title">Gerenciamento de Usuários</div>
+                    <div>
+                        <button class="btn btn-success" onclick="showAddUserModal()">+ Novo Usuário</button>
+                        <button class="btn" onclick="loadUsers()">🔄 Atualizar</button>
+                    </div>
+                </div>
+                <table id="usersTable">
+                    <thead>
+                        <tr>
+                            <th>Usuário</th>
+                            <th>Email</th>
+                            <th>Função</th>
+                            <th>Host SSH</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div id="ssh" class="hidden">
+            <div class="data-table">
+                <div class="table-header">
+                    <div class="table-title">Chaves SSH</div>
+                    <button class="btn btn-success" onclick="showAddKeyModal()">+ Nova Chave</button>
+                </div>
+                <table id="sshTable">
+                    <thead>
+                        <tr>
+                            <th>Usuário</th>
+                            <th>Tipo</th>
+                            <th>Fingerprint</th>
+                            <th>Criado</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div id="logs" class="hidden">
+            <div class="data-table">
+                <div class="table-header">
+                    <div class="table-title">Logs de Acesso</div>
+                    <div>
+                        <button class="btn" onclick="loadAccessLogs()">🔄 Atualizar</button>
+                        <button class="btn btn-danger" onclick="clearLogs()">🗑️ Limpar</button>
+                    </div>
+                </div>
+                <div id="logViewer" style="background: rgba(15, 23, 42, 0.8); padding: 20px; border-radius: 12px; font-family: 'Courier New', monospace; font-size: 13px; max-height: 500px; overflow-y: auto;"></div>
+            </div>
+        </div>
+        
+        <div id="config" class="hidden">
+            <div class="data-table">
+                <div class="table-header">
+                    <div class="table-title">Configurações do Sistema</div>
+                </div>
+                <div class="form-group">
+                    <label>URL do Servidor</label>
+                    <input type="text" id="serverUrl" value="http://localhost:8080">
+                </div>
+                <div class="form-group">
+                    <label>Atualização Automática</label>
+                    <input type="checkbox" id="autoUpdate" checked>
+                </div>
+                <button class="btn btn-success" onclick="saveConfig()">💾 Salvar</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modals -->
+    <div id="addUserModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">➕ Novo Usuário</div>
+                <span class="close" onclick="closeModal('addUserModal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Nome Completo</label>
+                    <input type="text" id="newUserName" placeholder="João Silva">
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="newUserEmail" placeholder="joao@empresa.com">
+                </div>
+                <div class="form-group">
+                    <label>Função</label>
+                    <select id="newUserRole">
+                        <option value="user">👤 User</option>
+                        <option value="admin">👑 Admin</option>
+                        <option value="sup">🛠️ Suporte</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Host SSH</label>
+                    <input type="text" id="newUserHost" placeholder="192.168.1.100">
+                </div>
+                <div class="form-group">
+                    <label>Usuário SSH</label>
+                    <input type="text" id="newUserUsername" placeholder="root">
+                </div>
+                <div class="form-group">
+                    <label>Senha SSH</label>
+                    <input type="password" id="newUserSSHPassword">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeModal('addUserModal')">Cancelar</button>
+                <button class="btn btn-success" onclick="addUser()">Criar Usuário</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="editUserModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">✏️ Editar Usuário</div>
+                <span class="close" onclick="closeModal('editUserModal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editUserOriginalEmail">
+                <div class="form-group">
+                    <label>Nome</label>
+                    <input type="text" id="editUserName">
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="editUserEmail">
+                </div>
+                <div class="form-group">
+                    <label>Função</label>
+                    <select id="editUserRole">
+                        <option value="user">👤 User</option>
+                        <option value="admin">👑 Admin</option>
+                        <option value="sup">🛠️ Suporte</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Host SSH</label>
+                    <input type="text" id="editUserHost">
+                </div>
+                <div class="form-group">
+                    <label>Usuário SSH</label>
+                    <input type="text" id="editUserUsername">
+                </div>
+                <div class="form-group">
+                    <label>Nova Senha SSH (deixe vazio para manter)</label>
+                    <input type="password" id="editUserSSHPassword">
+                </div>
+                <div class="form-group">
+                    <label>Status</label>
+                    <select id="editUserActive">
+                        <option value="true">✅ Ativo</option>
+                        <option value="false">❌ Inativo</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeModal('editUserModal')">Cancelar</button>
+                <button class="btn btn-success" onclick="saveEditUser()">Salvar</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="addKeyModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">🔑 Nova Chave SSH</div>
+                <span class="close" onclick="closeModal('addKeyModal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Usuário</label>
+                    <input type="text" id="keyUser">
+                </div>
+                <div class="form-group">
+                    <label>Chave Pública SSH</label>
+                    <textarea id="keyContent" rows="5" style="width: 100%; padding: 14px; background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(148, 163, 184, 0.2); border-radius: 10px; color: #e4e4e7; font-family: 'Courier New', monospace; font-size: 12px;" placeholder="ssh-rsa AAAAB3..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeModal('addKeyModal')">Cancelar</button>
+                <button class="btn btn-success" onclick="addSSHKey()">Adicionar</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function showSection(section) {
+            document.querySelectorAll('.main-content > div').forEach(el => {
+                if (el.id) el.classList.add('hidden');
+            });
+            document.getElementById(section).classList.remove('hidden');
+            document.getElementById(section).classList.add('fade-in');
+            
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            event.target.closest('.nav-item').classList.add('active');
+            
+            if (section === 'users') loadUsers();
+            if (section === 'ssh') loadSSHKeys();
+            if (section === 'logs') loadAccessLogs();
+            if (section === 'overview') loadStats();
+        }
+        
+        function loadStats() {
+            fetch('/api/stats').then(r => r.json()).then(data => {
+                document.getElementById('totalUsers').textContent = data.total_users;
+                document.getElementById('activeUsers').textContent = data.active_users;
+                document.getElementById('accessToday').textContent = data.access_today;
+            });
+        }
+        
+        function loadUsers() {
+            fetch('/api/users').then(r => r.json()).then(data => {
+                const tbody = document.querySelector('#usersTable tbody');
+                tbody.innerHTML = '';
+                data.users.forEach(user => {
+                    const roleClass = user.role === 'admin' ? 'badge-admin' : user.role === 'sup' ? 'badge-sup' : 'badge-user';
+                    const roleLabel = user.role === 'admin' ? '👑 Admin' : user.role === 'sup' ? '🛠️ Sup' : '👤 User';
+                    tbody.innerHTML += `
+                        <tr>
+                            <td style="font-weight: 600;">${user.name}</td>
+                            <td style="color: #94a3b8;">${user.email}</td>
+                            <td><span class="badge ${roleClass}">${roleLabel}</span></td>
+                            <td style="font-family: 'Courier New', monospace; font-size: 12px;">${user.ssh_host || '-'}</td>
+                            <td><span class="badge ${user.active ? 'badge-active' : 'badge-inactive'}">${user.active ? '✅ Ativo' : '❌ Inativo'}</span></td>
+                            <td>
+                                <button class="btn" style="padding: 8px 16px; font-size: 12px;" onclick="showEditUserModal('${user.email}')">✏️ Editar</button>
+                                <button class="btn btn-danger" style="padding: 8px 16px; font-size: 12px;" onclick="deleteUser('${user.email}')">🗑️</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            });
+        }
+        
+        function loadSSHKeys() {
+            fetch('/api/ssh-keys').then(r => r.json()).then(data => {
+                const tbody = document.querySelector('#sshTable tbody');
+                tbody.innerHTML = '';
+                data.keys.forEach(key => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td style="font-weight: 600;">${key.user}</td>
+                            <td><span class="badge badge-user">${key.type}</span></td>
+                            <td style="font-family: 'Courier New', monospace; font-size: 11px; color: #94a3b8;">${key.fingerprint}</td>
+                            <td style="color: #94a3b8;">${key.created}</td>
+                            <td>
+                                <button class="btn btn-danger" style="padding: 8px 16px; font-size: 12px;" onclick="deleteSSHKey('${key.user}')">🗑️ Remover</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            });
+        }
+        
+        function loadAccessLogs() {
+            fetch('/api/access-logs').then(r => r.json()).then(data => {
+                const viewer = document.getElementById('logViewer');
+                viewer.innerHTML = '';
+                data.logs.forEach(log => {
+                    const color = log.includes('ERROR') ? '#ef4444' : log.includes('WARNING') ? '#f59e0b' : '#10b981';
+                    viewer.innerHTML += `<div style="padding: 8px 0; border-bottom: 1px solid rgba(148, 163, 184, 0.1); color: ${color};">${log}</div>`;
+                });
+            });
+        }
+        
+        function showAddUserModal() {
+            document.getElementById('addUserModal').style.display = 'block';
+        }
+        
+        function showAddKeyModal() {
+            document.getElementById('addKeyModal').style.display = 'block';
+        }
+        
+        function showEditUserModal(email) {
+            fetch('/api/users').then(r => r.json()).then(data => {
+                const user = data.users.find(u => u.email === email);
+                if (!user) return;
+                
+                document.getElementById('editUserOriginalEmail').value = email;
+                document.getElementById('editUserName').value = user.name;
+                document.getElementById('editUserEmail').value = user.email;
+                document.getElementById('editUserUsername').value = user.username || '';
+                document.getElementById('editUserRole').value = user.role;
+                document.getElementById('editUserHost').value = user.ssh_host || '';
+                document.getElementById('editUserActive').value = user.active ? 'true' : 'false';
+                document.getElementById('editUserModal').style.display = 'block';
+            });
+        }
+        
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+        
+        function addUser() {
+            const data = {
+                name: document.getElementById('newUserName').value,
+                email: document.getElementById('newUserEmail').value,
+                username: document.getElementById('newUserUsername').value,
+                role: document.getElementById('newUserRole').value,
+                ssh_host: document.getElementById('newUserHost').value,
+                ssh_password: document.getElementById('newUserSSHPassword').value
+            };
+            
+            if (!data.name || !data.email) {
+                alert('❌ Nome e email são obrigatórios');
+                return;
+            }
+            
+            fetch('/api/users', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            }).then(r => r.json()).then(result => {
+                alert('✅ ' + result.message);
+                closeModal('addUserModal');
+                loadUsers();
+            }).catch(() => alert('❌ Erro ao criar usuário'));
+        }
+        
+        function saveEditUser() {
+            const originalEmail = document.getElementById('editUserOriginalEmail').value;
+            const data = {
+                name: document.getElementById('editUserName').value,
+                email: document.getElementById('editUserEmail').value,
+                username: document.getElementById('editUserUsername').value,
+                role: document.getElementById('editUserRole').value,
+                ssh_host: document.getElementById('editUserHost').value,
+                active: document.getElementById('editUserActive').value === 'true'
+            };
+            
+            const sshPassword = document.getElementById('editUserSSHPassword').value;
+            if (sshPassword) data.ssh_password = sshPassword;
+            
+            fetch(`/api/users/${originalEmail}`, {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            }).then(r => r.json()).then(result => {
+                alert('✅ ' + result.message);
+                closeModal('editUserModal');
+                loadUsers();
+            }).catch(() => alert('❌ Erro ao atualizar'));
+        }
+        
+        function deleteUser(email) {
+            if (!confirm(`Deletar usuário ${email}?`)) return;
+            fetch(`/api/users/${email}`, {method: 'DELETE'})
+                .then(r => r.json())
+                .then(result => {
+                    alert('✅ ' + result.message);
+                    loadUsers();
+                });
+        }
+        
+        function addSSHKey() {
+            const data = {
+                user: document.getElementById('keyUser').value,
+                key: document.getElementById('keyContent').value
+            };
+            fetch('/api/ssh-keys', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            }).then(r => r.json()).then(result => {
+                alert('✅ ' + result.message);
+                closeModal('addKeyModal');
+                loadSSHKeys();
+            });
+        }
+        
+        function deleteSSHKey(user) {
+            if (!confirm(`Remover chave de ${user}?`)) return;
+            fetch(`/api/ssh-keys/${user}`, {method: 'DELETE'})
+                .then(r => r.json())
+                .then(result => {
+                    alert('✅ ' + result.message);
+                    loadSSHKeys();
+                });
+        }
+        
+        function clearLogs() {
+            if (!confirm('Limpar todos os logs?')) return;
+            fetch('/api/access-logs', {method: 'DELETE'})
+                .then(r => r.json())
+                .then(result => {
+                    alert('✅ ' + result.message);
+                    loadAccessLogs();
+                });
+        }
+        
+        function saveConfig() {
+            const data = {
+                server_url: document.getElementById('serverUrl').value,
+                auto_update: document.getElementById('autoUpdate').checked
+            };
+            fetch('/api/config', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            }).then(r => r.json()).then(result => {
+                alert('✅ ' + result.message);
+            });
+        }
+        
+        loadStats();
+        setInterval(loadStats, 30000);
+    </script>
+</body>
+</html>

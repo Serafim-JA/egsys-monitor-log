@@ -1,4 +1,4 @@
-# egsys-monitor-log
+aalog
 
 ## Objetivo desse script
 Facilitar a visualização dos logs de serviços dos clientes via máquina local, sem precisar ter que ficar entrando na máquina e visualizar log por log para achar onde pode estar o erro. Este script permite navegar entre diferentes serviços e visualizar logs em tempo real.

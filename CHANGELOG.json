@@ -1,0 +1,20 @@
+[
+  {
+    "version": "1.1.0",
+    "date": "2026-02-06T16:00:56.543218",
+    "changes": [
+      "Atualiza\u00e7\u00e3o do sistema inteleginte e vinculativo a chaves ssh/rsa_pub"
+    ]
+  },
+  {
+    "version": "1.0.0",
+    "date": "2026-02-06T16:00:00",
+    "changes": [
+      "Sistema de monitoramento de logs via SSH",
+      "Autentica\u00e7\u00e3o baseada em chave SSH p\u00fablica",
+      "Interface profissional com Rich",
+      "Sistema de auditoria com gera\u00e7\u00e3o de PDF",
+      "Servidor de atualiza\u00e7\u00f5es centralizado"
+    ]
+  }
+]

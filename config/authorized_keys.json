@@ -1,0 +1,12 @@
+{
+  "authorized_users": [
+    {
+      "name": "Lucas Serafim",
+      "email": "lucasserafim@egsyssuporte1-MS-7A15",
+      "key": "AAAAB3NzaC1yc2EAAAADAQABAAACAQC6/vBLRDkgqePjnfpxuQslwN4CaPJhtiXfS7QSxScgcaG0FpAyirCwV56tfeeRcS8RWmfYysln/5WzLmFNFdAk/4lHqouMrI6Sg1TbB+3WDrq8cROGmaJ6HoAn77YPLOzooPk8UHCGnFkj9q+pcK6FisX9S7CkG7y1ZrYRgpFbrLOOZwoJvveBFcpKjYbX8/Lco5rFnOOoT3F5vxfJdec5b9TNrIymrAIQdFuW9lTObYzsSH0XrDNw91l9xp2URV0ukT4iiUIwBYyWzJC2lVJSoqkvT/eDK6bnoKy2uDH6zdGh18HY59kKeRnW/qeZSpNUWl08C/VQrChqsLRpYqsNH0YL+W43kTVBy8ZX/scs+96sOf3scQ0bRl4egF5EKK6cZgfKlNSf51nbXf0sqymZqz728ptGT/XaqgdPxn6CdMsGdlvAD5njqNxujfOn3XUAKlsNRNg3bRvzvalZJ6MPCY3qjOrHmmA6WPDn47Mq1i7sLGntTrJHouOKL11YA6DhjxZL34wT54YmWjaRNwv8WnVBEc32Fb0+7kVpgUbb244DnK8VLxdA+X1K9Gwt+SFkcbgxpqizML/TWOppNoxrWjvAZ3iq2HEm3D07ZjYkW8fGUl5pAj1pJQdTq8yko//4KbGasnvHBVoMTNZO2Jr7dxReGF/MmUrzM56y4GuanQ==",
+      "role": "admin",
+      "created_at": "2026-02-06T15:56:32.128584",
+      "last_access": "2026-02-06T17:20:30.717764"
+    }
+  ]
+}
