@@ -7,3 +7,4 @@ rich==13.7.0
 reportlab==4.0.9
 psutil==5.9.8
 gunicorn==21.2.0
+requests==2.31.0

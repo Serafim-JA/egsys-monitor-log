@@ -100,12 +100,17 @@ def api_add_user():
     data = request.json
     username = data.get('username', data['email'].split('@')[0])
     
+    # Gerar hash da senha para login no terminal
+    password_hash = bcrypt.hashpw(data['ssh_password'].encode(), bcrypt.gensalt()).decode()
+    
     new_user = {
         'name': data['name'],
         'email': data['email'],
         'username': username,
         'role': data['role'],
         'ssh_host': data.get('ssh_host', ''),
+        'ssh_password': data.get('ssh_password', ''),
+        'password_hash': password_hash,
         'public_key': data.get('public_key', ''),
         'created': datetime.now().isoformat(),
         'active': True

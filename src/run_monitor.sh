@@ -8,6 +8,11 @@ CONFIG_FILE="$PROJECT_ROOT/config/config.json"
 ENV_FILE="$PROJECT_ROOT/.env"
 REQUIREMENTS_FILE="$PROJECT_ROOT/requirements.txt"
 
+check_updates() {
+    echo "🔍 Verificando atualizações..."
+    python3 "$SCRIPT_DIR/auto_update.py" || true
+}
+
 install_dependencies() {
     echo "Verificando dependências..."
 
@@ -40,10 +45,10 @@ install_dependencies() {
     }
 
     echo "Instalando módulos Python..."
-    pip3 install --break-system-packages paramiko python-dotenv rich reportlab 2>/dev/null || \
-    pip3 install --user paramiko python-dotenv rich reportlab 2>/dev/null || {
+    pip3 install --break-system-packages paramiko python-dotenv rich reportlab requests 2>/dev/null || \
+    pip3 install --user paramiko python-dotenv rich reportlab requests 2>/dev/null || {
         echo "ERRO: Falha ao instalar dependências Python." >&2
-        echo "Execute manualmente: pip3 install --break-system-packages paramiko python-dotenv rich reportlab" >&2
+        echo "Execute manualmente: pip3 install --break-system-packages paramiko python-dotenv rich reportlab requests" >&2
         return 1
     }
 
@@ -130,6 +135,8 @@ echo -e "\n\033[1;36m=========================================\033[0m"
 echo -e "\033[1;36m|          INICIANDO SISTEMA          |\033[0m"
 echo -e "\033[1;36m=========================================\033[0m\n"
 
+check_updates
+
 if ! install_dependencies; then
     echo -e "\n\033[1;31mFALHA: Erro na instalação de dependências.\033[0m"
     exit 1
@@ -154,6 +161,12 @@ clear
 echo -e "\n\033[1;32mIniciando o monitor de logs...\033[0m\n"
 
 cd "$SCRIPT_DIR" || exit 1
+
+# Autenticação integrada
+if ! python3 "$SCRIPT_DIR/login.py"; then
+    echo -e "\n\033[1;31mERRO: Falha na autenticação.\033[0m"
+    exit 1
+fi
 
 if ! python3 "$SCRIPT_DIR/auth_wrapper.py"; then
     echo -e "\n\033[1;31mERRO: O monitor de logs encerrou com erro.\033[0m"
