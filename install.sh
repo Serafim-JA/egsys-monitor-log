@@ -58,8 +58,9 @@ install_dependencies() {
 
 install_python_deps() {
     echo "📦 Instalando dependências Python..."
-    pip3 install --user --upgrade pip
-    pip3 install --user paramiko python-dotenv rich reportlab flask flask-login bcrypt psutil gunicorn requests
+    pip3 install --user --upgrade pip 2>/dev/null || true
+    pip3 install --user --break-system-packages paramiko python-dotenv rich reportlab flask flask-login bcrypt psutil gunicorn requests 2>/dev/null || \
+    pip3 install --user paramiko python-dotenv rich reportlab flask flask-login bcrypt psutil gunicorn requests 2>/dev/null || true
 }
 
 clone_or_update() {
