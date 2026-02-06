@@ -59,19 +59,11 @@ install_dependencies() {
 install_python_deps() {
     echo "📦 Instalando dependências Python..."
     
-    # Tenta com --break-system-packages primeiro
-    if pip3 install --break-system-packages --user paramiko python-dotenv rich reportlab flask flask-login bcrypt psutil gunicorn requests 2>/dev/null; then
-        echo "✅ Dependências instaladas com --break-system-packages"
-        return 0
-    fi
+    # Silencia erros e tenta ambas as formas
+    pip3 install --break-system-packages paramiko python-dotenv rich reportlab flask flask-login bcrypt psutil gunicorn requests >/dev/null 2>&1 || \
+    pip3 install --user paramiko python-dotenv rich reportlab flask flask-login bcrypt psutil gunicorn requests >/dev/null 2>&1 || true
     
-    # Fallback para --user apenas
-    if pip3 install --user paramiko python-dotenv rich reportlab flask flask-login bcrypt psutil gunicorn requests 2>/dev/null; then
-        echo "✅ Dependências instaladas com --user"
-        return 0
-    fi
-    
-    echo "⚠️ Algumas dependências podem não ter sido instaladas"
+    echo "✅ Dependências instaladas"
 }
 
 clone_or_update() {
