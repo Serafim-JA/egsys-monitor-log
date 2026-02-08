@@ -5,13 +5,23 @@ import os
 import sys
 from pathlib import Path
 
-# Adiciona diretório src ao path
-PROJECT_ROOT = Path(__file__).parent.parent
+# Define diretórios
+if os.path.exists(os.path.expanduser('~/.egsys-monitor')):
+    PROJECT_ROOT = Path.home() / '.egsys-monitor'
+else:
+    PROJECT_ROOT = Path(__file__).parent
+
+# Adiciona src ao path
 sys.path.insert(0, str(PROJECT_ROOT / 'src'))
 
 # Importa módulos
-from login import authenticate
-from log_monitor import main as monitor_main
+try:
+    from login import authenticate
+    from log_monitor import main as monitor_main
+except ImportError as e:
+    print(f"\033[1;31m❌ Erro ao importar módulos: {e}\033[0m")
+    print(f"\033[1;33mPROJECT_ROOT: {PROJECT_ROOT}\033[0m")
+    sys.exit(1)
 
 def show_banner():
     print("\033[2J\033[H")  # Clear screen
