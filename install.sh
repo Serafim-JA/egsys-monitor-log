@@ -103,12 +103,8 @@ create_launcher() {
     local launcher="$HOME/.local/bin/egsys-monitor"
     mkdir -p "$HOME/.local/bin"
     
-    cat > "$launcher" << 'EOF'
-#!/bin/bash
-INSTALL_DIR="$HOME/.egsys-monitor"
-cd "$INSTALL_DIR" && bash "$INSTALL_DIR/src/run_monitor.sh"
-EOF
-    
+    # Cria symlink para o launcher principal
+    ln -sf "$INSTALL_DIR/egsys-monitor" "$launcher"
     chmod +x "$launcher"
     
     if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
