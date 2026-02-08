@@ -49,7 +49,10 @@ def authenticate():
     
     while attempts < max_attempts:
         username = input("👤 Usuário: ").strip()
-        password = input("🔑 Senha: ").strip()
+        
+        # Senha oculta usando getpass
+        import getpass
+        password = getpass.getpass("🔑 Senha: ")
         
         valid, user = verify_credentials(username, password)
         
