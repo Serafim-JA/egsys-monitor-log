@@ -1,7 +1,95 @@
-aalog
+# egSYS Monitor - Sistema de Monitoramento de Logs
 
-## Objetivo desse script
-Facilitar a visualização dos logs de serviços dos clientes via máquina local, sem precisar ter que ficar entrando na máquina e visualizar log por log para achar onde pode estar o erro. Este script permite navegar entre diferentes serviços e visualizar logs em tempo real.
+<div align="center">
+
+![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
+![Python](https://img.shields.io/badge/python-3.8+-green.svg)
+![License](https://img.shields.io/badge/license-MIT-orange.svg)
+![Status](https://img.shields.io/badge/status-active-success.svg)
+
+**Sistema centralizado de monitoramento de logs para ambientes distribuídos**
+
+[Instalação](#instalação) • [Documentação](DOCUMENTATION.md) • [Features](#features) • [Demo](#demo)
+
+</div>
+
+---
+
+## 🚀 Instalação Rápida
+
+```bash
+curl -sSL https://raw.githubusercontent.com/Serafim-JA/egsys-monitor-log/main/install.sh | bash
+```
+
+## ✨ Features
+
+- 📊 **Dashboard Web Moderno** - Interface intuitiva com gráficos em tempo real
+- 💻 **Monitor de Terminal** - Visualização de logs com navegação interativa
+- 🔐 **Autenticação Integrada** - Sistema unificado de login
+- 🔄 **Auto-Atualização** - Atualizações automáticas via GitHub
+- 🛡️ **Segurança** - Criptografia bcrypt e auditoria completa
+- 🌐 **Multi-Plataforma** - Linux, macOS e Windows (WSL)
+- 📦 **Instalador Universal** - Detecta automaticamente seu sistema
+
+## 📸 Demo
+
+### Dashboard Web
+![Dashboard](docs/images/dashboard.png)
+
+### Monitor de Terminal
+![Terminal](docs/images/terminal.png)
+
+## 📚 Documentação Completa
+
+Veja [DOCUMENTATION.md](DOCUMENTATION.md) para:
+- Guia completo de instalação
+- Configuração detalhada
+- Casos de uso
+- Troubleshooting
+- Arquitetura do sistema
+
+## 🛠️ Uso Rápido
+
+### Monitor de Logs
+```bash
+egsys-monitor
+```
+
+### Dashboard Web
+```bash
+cd ~/.egsys-monitor
+bash restart-dashboard.sh
+```
+Acesse: http://localhost:5000
+
+## 💻 Requisitos
+
+- Python 3.8+
+- Git
+- OpenSSH Client
+- 2GB RAM mínimo
+
+## 🤝 Contribuindo
+
+Contribuições são bem-vindas! Veja [CONTRIBUTING.md](CONTRIBUTING.md)
+
+## 📝 Licença
+
+MIT License - Veja [LICENSE](LICENSE)
+
+## ❤️ Autor
+
+**Serafim**
+- GitHub: [@Serafim-JA](https://github.com/Serafim-JA)
+- Email: serafim@egsys.com.br
+
+---
+
+<div align="center">
+
+**Desenvolvido com ❤️ para a comunidade egSYS**
+
+</div>
 
 ## Informações sobre o script
 É um script com interface de terminal que utiliza o Python para estabelecer conexões SSH (com a biblioteca `paramiko`) e executar comandos de visualização de logs (`tail -f`) nos servidores remotos. A configuração dos logs e das credenciais de acesso é feita através de arquivos JSON e de ambiente (`.env`).
