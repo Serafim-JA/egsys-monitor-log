@@ -464,6 +464,39 @@ def main_menu():
                 time.sleep(2)
                 continue
 
+            # Verificar se socket foi selecionado e oferecer filtro por idGuarnicao ou IMEI
+            socket_selected = any(cmd['name'] == 'socket' for cmd in selected_log_commands)
+            if socket_selected:
+                console.print("\n[bold cyan]Opção para SOCKET:[/bold cyan]")
+                console.print("1. Monitoramento normal")
+                console.print("2. Pesquisar por idGuarnicao específico")
+                console.print("3. Pesquisar por IMEI específico")
+                choice = input("Escolha (1, 2 ou 3): ").strip()
+                
+                if choice == '2':
+                    id_guarnicao = input("Digite o idGuarnicao: ").strip()
+                    if id_guarnicao:
+                        # Modificar o comando do socket para incluir grep
+                        for cmd in selected_log_commands:
+                            if cmd['name'] == 'socket':
+                                cmd['command'] += f" | grep 'idGuarnicao={id_guarnicao}'"
+                                console.print(f"[green]✓[/green] Filtro aplicado: idGuarnicao={id_guarnicao}")
+                                break
+                    else:
+                        console.print("[yellow]Nenhum idGuarnicao informado, usando monitoramento normal[/yellow]")
+                
+                elif choice == '3':
+                    imei = input("Digite o IMEI: ").strip()
+                    if imei:
+                        # Modificar o comando do socket para incluir grep
+                        for cmd in selected_log_commands:
+                            if cmd['name'] == 'socket':
+                                cmd['command'] += f" | grep '{imei}'"
+                                console.print(f"[green]✓[/green] Filtro aplicado: IMEI={imei}")
+                                break
+                    else:
+                        console.print("[yellow]Nenhum IMEI informado, usando monitoramento normal[/yellow]")
+
             ssh_connect(host, user, password, selected_log_commands)
             continue
 
