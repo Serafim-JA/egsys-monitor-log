@@ -162,11 +162,11 @@ echo -e "\n\033[1;32mIniciando o monitor de logs...\033[0m\n"
 
 cd "$SCRIPT_DIR" || exit 1
 
-# Autenticação integrada
-if ! python3 "$SCRIPT_DIR/login.py"; then
-    echo -e "\n\033[1;31mERRO: Falha na autenticação.\033[0m"
-    exit 1
-fi
+# Autenticação integrada permanentemente desabilitada
+# if ! python3 "$SCRIPT_DIR/login.py"; then
+#     echo -e "\n\033[1;31mERRO: Falha na autenticação.\033[0m"
+#     exit 1
+# fi
 
 if ! python3 "$SCRIPT_DIR/auth_wrapper.py"; then
     echo -e "\n\033[1;31mERRO: O monitor de logs encerrou com erro.\033[0m"
