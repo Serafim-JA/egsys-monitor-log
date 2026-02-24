@@ -1,0 +1,18 @@
+#!/bin/bash
+# egSYS Monitor Desktop - Launcher Global
+
+INSTALL_DIR="$HOME/.egsys-monitor"
+
+if [ -d "$INSTALL_DIR" ]; then
+    bash "$INSTALL_DIR/scripts/run-desktop.sh"
+else
+    # Fallback para diretório de desenvolvimento
+    DEV_DIR="$HOME/Área de Trabalho/egsys-monitor"
+    if [ -d "$DEV_DIR" ]; then
+        bash "$DEV_DIR/scripts/run-desktop.sh"
+    else
+        echo "❌ egSYS Monitor não encontrado"
+        echo "Execute: curl -sSL https://raw.githubusercontent.com/Serafim-JA/egsys-monitor-log/main/install.sh | bash"
+        exit 1
+    fi
+fi
