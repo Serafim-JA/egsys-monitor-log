@@ -145,7 +145,6 @@ Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para ma
 
 **Serafim**
 - GitHub: [@Serafim-JA](https://github.com/Serafim-JA)
-- Email: serafim@egsys.com.br
 
 ---
 
